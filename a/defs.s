@@ -1,0 +1,2 @@
+LCD_CTRL=0xb8
+LCD_DATA=0xb9
