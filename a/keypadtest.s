@@ -1,4 +1,5 @@
 .globl lcd_init, lcd_putchar, lcd_print
+.globl kpd_getchar
 
 KPD_DATA=0xb4
 IL=0x33     # Interrupt vector Low
@@ -20,19 +21,10 @@ init:
     out0 (ITC), a  # INT/TRAP control register
     im 2
     ei
-mainloop:
-    nop
-    nop
-    nop
-    nop
-    ld d, 0x00
-0:  nop
-    jr 0b
 
-.align 4
-kpd_chars:
-    .byte 'D','E','F','0','C','9','8','7'
-    .byte 'B','6','5','4','A','3','2','1'
+mainloop:
+0:  halt
+    jr 0b
 
 .align 5
 int_table:
@@ -57,12 +49,7 @@ int2:
     jr 2f
 
 1:  ld d, 0xff
-    in0 a, (KPD_DATA)
-    and 0x0f
-    ld hl, kpd_chars
-    or l
-    ld l, a
-    ld a, (hl)
+    call kpd_getchar
     call lcd_putchar
 
 2:  ei

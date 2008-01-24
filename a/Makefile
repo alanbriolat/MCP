@@ -7,7 +7,7 @@ addmem: addmem.o
 lcdtest: lcdtest.o utils.o lcd.o
 	h180 ld -T 8000 -C c000 -o $@ $^
 
-keypadtest: keypadtest.o utils.o lcd.o
+keypadtest: keypadtest.o utils.o lcd.o kpd.o
 	h180 ld -T 8000 -C c000 -o $@ $^
 
 clean:
