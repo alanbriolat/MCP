@@ -1,4 +1,5 @@
 .globl kpd_getchar
+.globl lcd_putchar
 
 KPD_DATA=0xb4
 

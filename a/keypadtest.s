@@ -1,4 +1,6 @@
+# LCD text display
 .globl lcd_init, lcd_putchar, lcd_print
+# Keypad
 .globl kpd_getchar
 
 KPD_DATA=0xb4
@@ -6,7 +8,7 @@ IL=0x33     # Interrupt vector Low
 ITC=0x34    # INT/TRAP Control
 
 start:
-    ld sp, 0xffff
+    #ld sp, 0xffff
 
 init:
     call lcd_init
