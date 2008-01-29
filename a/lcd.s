@@ -1,4 +1,4 @@
-.globl lcd_init, lcd_putchar, lcd_print
+.globl lcd_init, lcd_putchar, lcd_print, lcd_putbyte
 
 .globl delay
 
@@ -36,3 +36,21 @@ lcd_print:
     inc hl
     jr 0b
 1:  ret
+
+lcd_putbyte:
+    push bc
+    ld b, 0x08
+0:  rlca
+    jr nc, 1f
+    ex af, af
+    ld a, 0x31
+    call lcd_putchar
+    ex af, af
+    jr 2f
+1:  ex af, af
+    ld a, 0x30
+    call lcd_putchar
+    ex af, af
+2:  djnz 0b
+    pop bc
+    ret
