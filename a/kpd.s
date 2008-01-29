@@ -1,5 +1,4 @@
 .globl kpd_getchar
-.globl lcd_putchar
 
 KPD_DATA=0xb4
 
@@ -14,8 +13,10 @@ kpd_getchar:
     in0 a, (KPD_DATA)
     and 0x0f
     ld hl, kpd_charmap
-    or l
-    ld l, a
+    add a, l
+    jr nc, 0f
+    inc h
+0:  ld l, a
     ld a, (hl)
     pop hl
     ret
@@ -23,7 +24,6 @@ kpd_getchar:
 #
 # Keypad character map
 #
-.align 4
 kpd_charmap:
     .byte 'D','E','F','0','C','9','8','7'
     .byte 'B','6','5','4','A','3','2','1'
