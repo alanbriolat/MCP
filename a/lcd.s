@@ -1,4 +1,4 @@
-.globl lcd_init, lcd_putchar, lcd_print, lcd_putbyte
+.globl lcd_init, lcd_putchar, lcd_print, lcd_putbyte, lcd_clear
 
 .globl delay
 
@@ -7,11 +7,7 @@ LCD_DATA=0xb9
 
 lcd_init:
     # Clear display
-    ld a, 0x01
-    out0 (LCD_CTRL), a
-    # Delay ~1.7ms
-    ld b, 0x20
-    call delay
+    call lcd_clear
     # Display on, cursor on, blink on
     ld a, 0x0f
     out0 (LCD_CTRL), a
@@ -25,10 +21,11 @@ lcd_clear:
     out0 (LCD_CTRL), a      # Clear the display
     ld b, 0x20
     call delay              # Delay for ~1.7ms for the display to clear
+    ret
 
 # 
 # Put a character to the LCD text display
-#
+#`
 lcd_putchar:
     exx                     # Exchange registers to preserve B (faster than
                             # push/pop, and this is a common operation)
