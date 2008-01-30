@@ -1,6 +1,6 @@
-.globl kpd_getchar
+.globl keypad_getchar
 
-KPD_DATA=0xb4
+KEYPAD_DATA=0xb4
 
 # 
 # Get a character from the keypad
@@ -8,11 +8,11 @@ KPD_DATA=0xb4
 # Returns the ASCII representation of the current keypress into the
 # accumulator.
 #
-kpd_getchar:
+keypad_getchar:
     push hl
-    in0 a, (KPD_DATA)
+    in0 a, (KEYPAD_DATA)
     and 0x0f
-    ld hl, kpd_charmap
+    ld hl, keypad_charmap
     add a, l
     jr nc, 0f
     inc h
@@ -24,6 +24,6 @@ kpd_getchar:
 #
 # Keypad character map
 #
-kpd_charmap:
+keypad_charmap:
     .byte 'D','E','F','0','C','9','8','7'
     .byte 'B','6','5','4','A','3','2','1'

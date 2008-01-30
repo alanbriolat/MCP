@@ -1,30 +1,38 @@
 # Terminal
-.globl terminal_enableint
-.globl terminal_print
-.globl terminal_putchar
+.globl terminal_init
 .globl terminal_getchar
+.globl terminal_putchar
+.globl terminal_putbyte
+.globl terminal_print
+.globl terminal_newline
 
 # Keypad
-.globl kpd_getchar
+.globl keypad_getchar
 
 # LCD text display
 .globl lcd_putchar, lcd_init
 
 # Utils
-.globl crlf, helloworld
+.globl helloworld
 
 INT_IL=0x33
 INT_ITC=0x34
 
 start:
+    # Initialise LCD text display
     call lcd_init
+    # Initialise terminal ASCI channel
+    call terminal_init
+    # Setup interrupts
     call int_init
-    ld hl, crlf
-    call terminal_print
+
+    # Print "Hello, world!"
+    call terminal_newline
     ld hl, helloworld
     call terminal_print
-    ld hl, crlf
-    call terminal_print
+    call terminal_newline
+    
+    # Loop forever!
 0:  nop
     jr 0b
 
@@ -41,8 +49,6 @@ int_init:
     # Enable INT0, INT1, INT2
     ld a, 0x07
     out0 (INT_ITC), a
-
-    call terminal_enableint
 
     # Enable interrupts
     im 2
@@ -72,7 +78,7 @@ int_int2:
     jr 2f
 
 1:  ld d, 0xff
-    call kpd_getchar
+    call keypad_getchar
     call lcd_putchar
 
 2:  ei

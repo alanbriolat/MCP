@@ -1,4 +1,8 @@
-.globl lcd_init, lcd_putchar, lcd_print, lcd_putbyte, lcd_clear
+.globl lcd_init
+.globl lcd_clear
+.globl lcd_putchar
+.globl lcd_putbyte
+.globl lcd_print
 
 .globl delay
 

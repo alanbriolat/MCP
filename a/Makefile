@@ -1,19 +1,10 @@
 %.o: %.s
 	h180 as -o $@ $<
 
-addmem: addmem.o
-	h180 ld -T 8000 -C c000 -o $@ $^
+all: interfacetest
 
-lcdtest: lcdtest.o utils.o lcd.o
-	h180 ld -T 8000 -C c000 -o $@ $^
 
-keypadtest: keypadtest.o kpd.o utils.o lcd.o
-	h180 ld -T 8000 -o $@ $^
-
-seyontest: seyontest.o terminal.o lcd.o utils.o
-	h180 ld -T 8000 -C c000 -o $@ $^
-
-term+kpdtest: term+kpdtest.o terminal.o kpd.o lcd.o utils.o
+interfacetest: interfacetest.o terminal.o keypad.o lcd.o utils.o
 	h180 ld -T 8000 -C c000 -o $@ $^
 
 clean:
