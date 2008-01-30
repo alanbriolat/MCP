@@ -13,6 +13,8 @@ keypadtest: keypadtest.o kpd.o utils.o lcd.o
 seyontest: seyontest.o terminal.o lcd.o utils.o
 	h180 ld -T 8000 -C c000 -o $@ $^
 
+term+kpdtest: term+kpdtest.o terminal.o kpd.o lcd.o utils.o
+	h180 ld -T 8000 -C c000 -o $@ $^
 
 clean:
 	rm -f *.o

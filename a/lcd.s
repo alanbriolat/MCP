@@ -20,12 +20,22 @@ lcd_init:
     call delay
     ret
 
+lcd_clear:
+    ld a, 0x01          
+    out0 (LCD_CTRL), a      # Clear the display
+    ld b, 0x20
+    call delay              # Delay for ~1.7ms for the display to clear
+
+# 
+# Put a character to the LCD text display
+#
 lcd_putchar:
-    push bc
-    out (LCD_DATA), a
-    ld b, 0x01
+    exx                     # Exchange registers to preserve B (faster than
+                            # push/pop, and this is a common operation)
+    out (LCD_DATA), a       # Put the character to the display
+    ld b, 0x01              # Delay for ~0.04ms to allow display to catch up
     call delay
-    pop bc
+    exx                     # Exchange registers back again
     ret
 
 lcd_print:
