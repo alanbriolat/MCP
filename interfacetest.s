@@ -56,6 +56,9 @@ int_init:
     ld a, 0x07
     out0 (INT_ITC), a
 
+    ld a, 0x00
+    ld (keypadflag), a
+
     # Enable interrupts
     im 2
     ei
@@ -77,13 +80,14 @@ int_table:
 int_int1:
 int_int2:
     di
-    ld a, d
+    ld a, (keypadflag)
     cp 0x00
     jr z, 1f
     pop hl
     jr 2f
 
-1:  ld d, 0xff
+1:  ld a, 0xff
+    ld (keypadflag), a
     call keypad_getchar
     call lcd_putchar
 
@@ -91,8 +95,11 @@ int_int2:
     nop
     nop
     nop
-    ld d, 0x00
+    ld a, 0x00
+    ld (keypadflag), a
     reti
+
+.lcomm keypadflag, 1
 
 int_prt0:
 int_prt1:
