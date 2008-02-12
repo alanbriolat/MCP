@@ -38,11 +38,14 @@ start:
     call set_note
 
     ld d, 0x00
-    ld e, 0x12
+    ld e, 0x11
+
+    ld a, 0x00
+    ld (squarewave), a
 
     # Get the address of the interrupt table
     ld hl, interrupts
-    # Set the interrupt base vector
+    # Set the  interrupt base vector
     ld a, h
     ld i, a
     # Set the interrupt low base vector
@@ -77,6 +80,9 @@ interrupts:
     .int int_asci0
     .int int_asci1
 
+squarewave:
+    .byte 0x00
+
 int_int1:
     reti
 int_int2:
@@ -87,12 +93,14 @@ int_prt0:
     in0 a, (PRT_TCR)
     in0 a, (PRT0_DR_L)
     ex af, af
+    ld a, (squarewave)
     and a
     jr nz, 0f
     dec a
     jr 1f
 0:  inc a
 1:  call output_wave
+    ld (squarewave), a
     ei
     reti
 int_prt1:
