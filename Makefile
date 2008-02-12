@@ -11,6 +11,7 @@ paralleltest: paralleltest.o parallel.o utils.o
 	h180 ld -T 8000 -C c000 -o $@ $^
 
 synth: synth.o output.o terminal.o network.o keypad.o lcd.o utils.o
+	h180 ld -T 8000 -C c000 -o $@ $^
 
 clean:
 	rm -f *.o
