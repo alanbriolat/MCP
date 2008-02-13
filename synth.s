@@ -12,10 +12,7 @@
 .globl terminal_print
 .globl terminal_newline
 
-.globl keypad_getchar
 .globl keypad_getbyte
-
-.globl lcd_putchar
 
 .set IL, 0x33
 .set ITC, 0x34
@@ -86,8 +83,6 @@ interrupts:
     .int int_asci0
     .int int_asci1
 
-squarewave:
-    .byte 0x00
 
 int_int1:
     reti
@@ -118,22 +113,42 @@ int_int2:
     ld (keypad_lockout), a
     reti
 
+#
+# PRT0 Interrupt handler - wave output
+#
+# Uses only the shadow registers, so that the interrupt handler finishes quickly
+# and can happen during other interrupts without making a mess
+#
+# D = position of the square wave
+#
 int_prt0:
+    # Disable interrupts
     di
+    # Use the shadow registers
     ex af, af
+    exx
+    # Clear the interrup
     in0 a, (PRT_TCR)
     in0 a, (PRT0_DR_L)
-    ex af, af
-    ld a, (squarewave)
+    # Get the current position of the square wave
+    ld a, d
+    # Invert it (next part of the oscillation)
     and a
     jr nz, 0f
     dec a
     jr 1f
 0:  inc a
+    # Output the waveform part
 1:  call output_wave
-    ld (squarewave), a
+    # Save the new value back to the variable
+    ld d, a
+    # Swap back to the main registers
+    exx
+    ex af, af
+    # Re-enable interrupts and return
     ei
     reti
+
 int_prt1:
     reti
 int_dma0:
@@ -149,6 +164,7 @@ int_asci0:
     call network_getchar
     # If it's a carriage return, end of packet
     cp 0x0d
+    ei
     jr nz, 0f
     # Handle the packet
     call dopacket
@@ -160,8 +176,7 @@ int_asci0:
     ld (hl), a
     inc hl
     ld (netbufptr), hl
-1:  ei
-    reti
+1:  reti
 
 dopacket:
     ld hl, netbuffer
