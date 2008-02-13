@@ -12,6 +12,11 @@
 .globl terminal_print
 .globl terminal_newline
 
+.globl keypad_getchar
+.globl keypad_getbyte
+
+.globl lcd_putchar
+
 .set IL, 0x33
 .set ITC, 0x34
 
@@ -37,11 +42,12 @@ start:
     ld a, 0x39
     call set_note
 
-    ld d, 0x00
-    ld e, 0x11
+    # Reset the network buffer pointer
+    ld hl, netbuffer
+    ld (netbufptr), hl
 
-    ld a, 0x00
-    ld (squarewave), a
+    # Set the instrument (channel 9)
+    ld d, 0x12
 
     # Get the address of the interrupt table
     ld hl, interrupts
@@ -85,8 +91,33 @@ squarewave:
 
 int_int1:
     reti
+
+# Keypad interrupt handler
+keypad_lockout:
+    .byte 0x00
 int_int2:
+    di
+    ld a, (keypad_lockout)
+    cp 0x00
+    jr z, 1f
+    pop hl
+    jr 2f
+
+1:  ld a, 0xff
+    ld (keypad_lockout), a
+    call keypad_getbyte
+    # Change the instrument
+    sla a
+    ld d, a
+
+2:  ei
+    nop
+    nop
+    nop
+    ld a, 0x00
+    ld (keypad_lockout), a
     reti
+
 int_prt0:
     di
     ex af, af
@@ -112,42 +143,56 @@ int_dma1:
 int_csio:
     reti
 int_asci0:
-# 
-# a = getchar
-# if a == 0x0d:
-#   d = 0
-#   return
-# d++
-# if d == e:
-#   set_note
-#
+    # Disable interrupts
     di
+    # Get the character from the network
     call network_getchar
+    # If it's a carriage return, end of packet
     cp 0x0d
     jr nz, 0f
-    ld d, 0x00
-    ei
+    # Handle the packet
+    call dopacket
+    # Reset the buffer pointer
+    ld hl, netbuffer
+    ld (netbufptr), hl
+    jr 1f
+0:  ld hl, (netbufptr)
+    ld (hl), a
+    inc hl
+    ld (netbufptr), hl
+1:  ei
     reti
-0:  inc d
-    ex af, af
-    ld a, d
-    cp e
-    jr nz, 1f
-    ex af, af
+
+dopacket:
+    ld hl, netbuffer
+    ld l, d
+    ld a, (hl)
     call set_note
-    ei
-    reti
-1:  ex af, af
-    ei
-    reti
+    inc hl
+    ld a, (hl)
+    sla a
+    call output_volume
+    ret
 
 int_asci1:
     reti
+
+# General flags
+#  7 = had network packet already (for getting rid of the first)
+flags:
+    .byte 0x00
+
+netbufptr:
+    .int netbuffer
+.align 8
+netbuffer:
+    .space 70
 
 # 
 # Set the frequency based on the MIDI note
 #
 set_note:
+    push hl
     sla a
     ld hl, note_table
     ld l, a
@@ -156,6 +201,7 @@ set_note:
     inc hl
     ld a, (hl)
     out0 (PRT0_RLD_H), a
+    pop hl
     ret
     
 .align 8
