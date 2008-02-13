@@ -1,4 +1,5 @@
 .globl keypad_getchar
+.globl keypad_getbyte
 
 KEYPAD_DATA=0xb4
 
@@ -19,6 +20,14 @@ keypad_getchar:
 0:  ld l, a
     ld a, (hl)
     pop hl
+    ret
+
+# 
+# Get the actual value of the keypad key
+#
+keypad_getbyte:
+    in0 a, (KEYPAD_DATA)
+    and 0x0f
     ret
 
 #
