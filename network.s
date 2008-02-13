@@ -1,43 +1,49 @@
 .globl network_init
+.globl network_clearint
 .globl network_getchar
+.globl NETWORK_CTRLA
+.globl NETWORK_CTRLB
+.globl NETWORK_STAT
+.globl NETWORK_TX
+.globl NETWORK_RX
+.globl NETWORK_CTRLA_VALUE
+.globl NETWORK_CTRLB_VALUE
+.globl NETWORK_STAT_VALUE
 
-NETWORK_CTRLA=0x00
-NETWORK_CTRLB=0x02
-NETWORK_STAT=0x04
-NETWORK_TX=0x06
-NETWORK_RX=0x08
+.set NETWORK_CTRLA, 0x00
+.set NETWORK_CTRLB, 0x02
+.set NETWORK_STAT, 0x04
+.set NETWORK_TX, 0x06
+.set NETWORK_RX, 0x08
 
-CTRLA=0x54      # ASCI 0 Control A - receive enable, transmit disable
-                #   8-bit, no parity, 1 stop bit
-CTRLB=0x01      # ASCI 0 Control B - 19200bps baud rate
-STAT=0x0c       # ASCI Status - Receive interrupt enabled, CTS enabled
-
-# Pointer into the network buffer
-.lcomm bufptr, 2
+# ASCI 0 Control A - receive enable, transmit disable 8-bit, 
+#   no parity, 1 stop bit
+.set NETWORK_CTRLA_VALUE, 0x54
+# ASCI 0 Control B - 19200bps baud rate
+.set NETWORK_CTRLB_VALUE, 0x01
+# ASCI Status - Receive interrupt enabled, CTS enabled
+.set NETWORK_STAT_VALUE, 0x0c
 
 # 
 # Initialise the network interface
 #
 network_init:
     # Clear interrupt, set operating mode
-    ld a, CTRLA
+    ld a, NETWORK_CTRLA_VALUE
     out0 (NETWORK_CTRLA), a
     # Set baud rate
-    ld a, CTRLB
+    ld a, NETWORK_CTRLB_VALUE
     out0 (NETWORK_CTRLB), a
     # Enable interrupts
-    ld a, STAT
+    ld a, NETWORK_STAT_VALUE
     out0 (NETWORK_STAT), a
-    # Reset the buffer pointer
-    ld hl, network_buffer
-    ld (bufptr), hl
     ret
 
 # 
 # Clear the interrupt on the network interface
 #
 network_clearint:
-    ld a, CTRLA
+    ld a, NETWORK_CTRLA_VALUE
     out0 (NETWORK_CTRLA), a
     ret
 
@@ -51,38 +57,3 @@ network_getchar:
     jr z, 0b
     in0 a, (NETWORK_RX)
     ret
-
-#
-# Interrupt sub-handler for network data - add it to the buffer
-#
-# Post-condition:
-#   Accumulator contains the character that was received
-#
-network_handler:
-    # Clear the interrupt
-    call network_clearint
-    # Make sure the character is definitely here
-0:  in0 a, (NETWORK_STAT)
-    bit 7, a
-    jr z, 0b
-    # Get the character
-    in0 a, (NETWORK_RX)
-    # Add the character to the buffer
-    ld hl, (bufptr)
-    ld (hl), a
-    # Check if this was a carriage return
-    cp 0x0d
-    jr nz, 1f
-    # CR = go back to beginning of the buffer
-    ld hl, network_buffer
-    jr 2f
-    # Not CR = go to next buffer location
-1:  inc hl
-2:  ld (bufptr), hl
-    ret
-
-#
-# Network data buffer to store complete packet of data
-#
-network_buffer:
-    .space 64
