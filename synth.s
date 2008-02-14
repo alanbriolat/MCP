@@ -1,9 +1,23 @@
 .globl network_init
 .globl network_getchar
-.globl NETWORK_RX
-.globl NETWORK_CTRLA
-.globl NETWORK_CTRLA_VALUE
-.globl NETWORK_STAT
+#.globl NETWORK_RX
+#.globl NETWORK_CTRLA
+#.globl NETWORK_CTRLA_VALUE
+#.globl NETWORK_STAT
+
+.set NETWORK_CTRLA, 0x00
+.set NETWORK_CTRLB, 0x02
+.set NETWORK_STAT, 0x04
+.set NETWORK_TX, 0x06
+.set NETWORK_RX, 0x08
+
+# ASCI 0 Control A - receive enable, transmit disable 8-bit, 
+#   no parity, 1 stop bit
+.set NETWORK_CTRLA_VALUE, 0x54
+# ASCI 0 Control B - 19200bps baud rate
+.set NETWORK_CTRLB_VALUE, 0x01
+# ASCI Status - Receive interrupt enabled, CTS enabled
+.set NETWORK_STAT_VALUE, 0x0c
 
 .globl output_init
 .globl output_volume
@@ -167,7 +181,13 @@ int_asci0:
     # Disable interrupts
     di
     # Get the character from the network
-    call network_getchar
+    #call network_getchar
+    ld a, NETWORK_CTRLA_VALUE
+    out0 (NETWORK_CTRLA), a
+8:  in0 a, (NETWORK_STAT)
+    bit 7, a
+    jr z, 8b
+    in0 a, (NETWORK_RX)
     # If it's a carriage return, end of packet
     cp 0x0d
     jr nz, 0f
