@@ -1,7 +1,8 @@
 .globl keypad_getchar
 .globl keypad_getbyte
+.globl KEYPAD_DATA
 
-KEYPAD_DATA=0xb4
+.set KEYPAD_DATA, 0xb4
 
 # 
 # Get a character from the keypad
