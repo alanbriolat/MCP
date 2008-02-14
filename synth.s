@@ -190,8 +190,18 @@ int_asci0:
     # If it's a carriage return, end of packet
     cp 0x0d
     jr nz, 0f
+
     # Handle the packet
-    call dopacket
+    ld hl, netbuffer
+    ld b, 0x00
+    add hl, bc
+    ld a, (hl)
+    call set_note
+    inc hl
+    ld a, (hl)
+    sla a
+    call output_volume
+
     # Reset the buffer pointer
     ld hl, netbuffer
     ld (netbufptr), hl
