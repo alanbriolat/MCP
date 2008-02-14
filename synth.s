@@ -64,7 +64,7 @@ start:
     ld (netbufptr), hl
 
     # Set the instrument (channel 9)
-    ld e, 0x12
+    ld c, 0x12
 
     # Get the address of the interrupt table
     ld hl, interrupts
@@ -123,7 +123,7 @@ int_int2:
     call keypad_getbyte
     # Change the instrument
     sla a
-    ld e, a
+    ld c, a
 
 2:  ei
     nop
@@ -181,7 +181,6 @@ int_asci0:
     # Disable interrupts
     di
     # Get the character from the network
-    #call network_getchar
     ld a, NETWORK_CTRLA_VALUE
     out0 (NETWORK_CTRLA), a
 8:  in0 a, (NETWORK_STAT)
@@ -206,8 +205,8 @@ int_asci0:
 
 dopacket:
     ld hl, netbuffer
-    ld d, 0x00
-    add hl, de
+    ld b, 0x00
+    add hl, bc
     ld a, (hl)
     #cp e
     #jr z, 0f
