@@ -22,6 +22,10 @@
 .globl output_init
 .globl output_volume
 .globl output_wave
+# I/O addresses of the PIO ports
+.set OUTPUT_VOL,    0xb0
+.set OUTPUT_WAVE,   0xb1
+.set OUTPUT_CTRL,   0xb3
 
 .globl terminal_init
 .globl terminal_getchar
@@ -200,7 +204,7 @@ int_asci0:
     inc hl
     ld a, (hl)
     sla a
-    call output_volume
+    out0 (OUTPUT_VOL), a
 
     # Reset the buffer pointer
     ld hl, netbuffer
@@ -213,21 +217,6 @@ int_asci0:
 1:  ei
     reti
 
-dopacket:
-    ld hl, netbuffer
-    ld b, 0x00
-    add hl, bc
-    ld a, (hl)
-    #cp e
-    #jr z, 0f
-    call set_note
-0:  #ld e, a
-    inc hl
-    ld a, (hl)
-    sla a
-    call output_volume
-    ret
-
 int_asci1:
     reti
 
@@ -238,8 +227,10 @@ flags:
 
 netbufptr:
     .int netbuffer
+# This is massive because carelessly switching between channels really
+# fast can cause buffer overflow if it is any smaller
 netbuffer:
-    .space 70
+    .space 128
 
 # 
 # Set the frequency based on the MIDI note
