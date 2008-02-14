@@ -1,5 +1,9 @@
 .globl network_init
 .globl network_getchar
+.globl NETWORK_RX
+.globl NETWORK_CTRLA
+.globl NETWORK_CTRLA_VALUE
+.globl NETWORK_STAT
 
 .globl output_init
 .globl output_volume
@@ -18,6 +22,8 @@
 .set ITC, 0x34
 
 .set PRT_TCR, 0x10
+.set PRT_ENABLED, 0x11
+.set PRT_DISABLED, 0x00
 .set PRT0_RLD_L, 0x0e
 .set PRT0_RLD_H, 0x0f
 .set PRT0_DR_L, 0x0c
@@ -44,7 +50,7 @@ start:
     ld (netbufptr), hl
 
     # Set the instrument (channel 9)
-    ld d, 0x12
+    ld e, 0x12
 
     # Get the address of the interrupt table
     ld hl, interrupts
@@ -60,7 +66,7 @@ start:
     out0 (ITC), a
     
     # Enable interrupts on PRT0
-    ld a, 0x11
+    ld a, PRT_ENABLED
     out0 (PRT_TCR), a
 
     # Enable interrupts
@@ -103,7 +109,7 @@ int_int2:
     call keypad_getbyte
     # Change the instrument
     sla a
-    ld d, a
+    ld e, a
 
 2:  ei
     nop
@@ -164,7 +170,6 @@ int_asci0:
     call network_getchar
     # If it's a carriage return, end of packet
     cp 0x0d
-    ei
     jr nz, 0f
     # Handle the packet
     call dopacket
@@ -176,13 +181,18 @@ int_asci0:
     ld (hl), a
     inc hl
     ld (netbufptr), hl
-1:  reti
+1:  ei
+    reti
 
 dopacket:
     ld hl, netbuffer
-    ld l, d
+    ld d, 0x00
+    add hl, de
     ld a, (hl)
+    #cp e
+    #jr z, 0f
     call set_note
+0:  #ld e, a
     inc hl
     ld a, (hl)
     sla a
@@ -199,7 +209,6 @@ flags:
 
 netbufptr:
     .int netbuffer
-.align 8
 netbuffer:
     .space 70
 
@@ -210,7 +219,10 @@ set_note:
     push hl
     sla a
     ld hl, note_table
-    ld l, a
+    add a, l
+    jr nc, 0f
+    inc h
+0:  ld l, a
     ld a, (hl)
     out0 (PRT0_RLD_L), a
     inc hl
@@ -219,7 +231,6 @@ set_note:
     pop hl
     ret
     
-.align 8
 note_table:
     .int 0x0000    # C -5
     .int 0x0000    # C#/Db -5
