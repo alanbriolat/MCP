@@ -191,8 +191,10 @@ int_asci0:
     bit 7, a
     jr z, 8b
     in0 a, (NETWORK_RX)
+
     # If it's a carriage return, end of packet
     cp 0x0d
+    ei
     jr nz, 0f
 
     # Handle the packet
@@ -200,7 +202,21 @@ int_asci0:
     ld b, 0x00
     add hl, bc
     ld a, (hl)
-    call set_note
+
+    ex de, hl
+    sla a
+    ld hl, note_table
+    add a, l
+    jr nc, 8f
+    inc h
+8:  ld l, a
+    ld a, (hl)
+    out0 (PRT0_RLD_L), a
+    inc hl
+    ld a, (hl)
+    out0 (PRT0_RLD_H), a
+    ex de, hl
+
     inc hl
     ld a, (hl)
     sla a
@@ -214,7 +230,7 @@ int_asci0:
     ld (hl), a
     inc hl
     ld (netbufptr), hl
-1:  ei
+1:  
     reti
 
 int_asci1:
