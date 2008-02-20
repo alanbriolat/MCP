@@ -60,7 +60,7 @@ start:
     call output_init
     ld a, 0xff
     call output_volume
-    ld a, 0x39
+    ld a, 0x6b
     call set_note
 
     # Reset the network buffer pointer
@@ -69,6 +69,11 @@ start:
 
     # Set the instrument (channel 9)
     ld c, 0x12
+
+    # Set the wave sample
+    exx
+    ld hl, sample_sine_sustain
+    exx
 
     # Get the address of the interrupt table
     ld hl, interrupts
@@ -146,30 +151,29 @@ int_int2:
 # D = position of the square wave
 #
 int_prt0:
-    # Disable interrupts
+    # Disable interrupts, exchange registers
     di
-    # Use the shadow registers
     ex af, af
     exx
-    # Clear the interrup
+
+    # Clear the interrupt
     in0 a, (PRT_TCR)
     in0 a, (PRT0_DR_L)
-    # Get the current position of the square wave
-    ld a, d
-    # Invert it (next part of the oscillation)
-    and a
+
+    # Output the part of the wave
+    ld a, (hl)
+    out0 (OUTPUT_WAVE), a
+
+    # Put the pointer in the next place
+    inc hl
+    ld a, (hl)
+    cp 0x00
     jr nz, 0f
-    dec a
-    jr 1f
-0:  inc a
-    # Output the waveform part
-1:  call output_wave
-    # Save the new value back to the variable
-    ld d, a
-    # Swap back to the main registers
-    exx
+    ld hl, sample_sine_sustain
+
+    # Exchange registers, enable interrupts, return
+0:  exx
     ex af, af
-    # Re-enable interrupts and return
     ei
     reti
 
@@ -266,6 +270,10 @@ set_note:
     out0 (PRT0_RLD_H), a
     pop hl
     ret
+
+sample_sine_sustain:
+    .byte 0x83,0xa0,0xc1,0xd6,0xe3,0xe4,0xd8,0xc3,0xa4,0x82
+    .byte 0x60,0x40,0x29,0x1b,0x1a,0x25,0x38,0x57,0x77,0x00
     
 note_table:
     .int 0x0000    # C -5
