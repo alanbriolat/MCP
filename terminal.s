@@ -5,29 +5,18 @@
 .globl terminal_print
 .globl terminal_newline
 
-TERMINAL_CTRLA=0x01
-TERMINAL_CTRLB=0x03
-TERMINAL_STAT=0x05
-TERMINAL_TX=0x07
-TERMINAL_RX=0x09
-
-CTRLA=0x72      # ASCI 1 Control A - receive enable, transmit enable, 
-                #   7-bit, parity, 1 stop bit
-CTRLB=0x03      # ASCI 1 Control B - 4800bps baud rate
-STAT=0x0c       # ASCI Status - Receive interrupt enabled, CTS enabled
-
 #
 # Initialise the ASCI channel for the terminal
 #
 terminal_init:
     # Clear interrupt, set operating mode
-    ld a, CTRLA
+    ld a, TERMINAL_CTRLA_VALUE
     out0 (TERMINAL_CTRLA), a
     # Set baud rate
-    ld a, CTRLB
+    ld a, TERMINAL_CTRLB_VALUE
     out0 (TERMINAL_CTRLB), a
     # Enable interrupts
-    ld a, STAT
+    ld a, TERMINAL_STAT_VALUE
     out0 (TERMINAL_STAT), a
     ret
 
@@ -35,7 +24,7 @@ terminal_init:
 # Clear the interrupt on the terminal
 #
 terminal_clearint:
-    ld a, CTRLA
+    ld a, TERMINAL_CTRLA_VALUE
     out0 (TERMINAL_CTRLA), a
     ret
     

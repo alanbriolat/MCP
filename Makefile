@@ -1,5 +1,5 @@
-%.o: %.s
-	h180 as -o $@ $<
+%.o: defs.s %.s
+	h180 as -o $@ $^
 
 all: synth
 

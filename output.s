@@ -13,11 +13,6 @@
 .globl output_volume
 .globl output_wave
 
-# I/O addresses of the PIO ports
-.set OUTPUT_VOL,    0xb0
-.set OUTPUT_WAVE,   0xb1
-.set OUTPUT_CTRL,   0xb3
-
 # 
 # Initialise the parallel I/O controller to use both
 # channels as outputs

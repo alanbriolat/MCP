@@ -6,9 +6,6 @@
 
 .globl delay
 
-LCD_CTRL=0xb8
-LCD_DATA=0xb9
-
 lcd_init:
     # Clear display
     call lcd_clear

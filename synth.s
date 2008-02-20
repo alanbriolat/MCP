@@ -1,32 +1,8 @@
+# Networking
 .globl network_init
 .globl network_getchar
-#.globl NETWORK_RX
-#.globl NETWORK_CTRLA
-#.globl NETWORK_CTRLA_VALUE
-#.globl NETWORK_STAT
 
-.set NETWORK_CTRLA, 0x00
-.set NETWORK_CTRLB, 0x02
-.set NETWORK_STAT, 0x04
-.set NETWORK_TX, 0x06
-.set NETWORK_RX, 0x08
-
-# ASCI 0 Control A - receive enable, transmit disable 8-bit, 
-#   no parity, 1 stop bit
-.set NETWORK_CTRLA_VALUE, 0x54
-# ASCI 0 Control B - 19200bps baud rate
-.set NETWORK_CTRLB_VALUE, 0x01
-# ASCI Status - Receive interrupt enabled, CTS enabled
-.set NETWORK_STAT_VALUE, 0x0c
-
-.globl output_init
-.globl output_volume
-.globl output_wave
-# I/O addresses of the PIO ports
-.set OUTPUT_VOL,    0xb0
-.set OUTPUT_WAVE,   0xb1
-.set OUTPUT_CTRL,   0xb3
-
+# Terminal
 .globl terminal_init
 .globl terminal_getchar
 .globl terminal_putchar
@@ -34,7 +10,13 @@
 .globl terminal_print
 .globl terminal_newline
 
+# Keypad
 .globl keypad_getbyte
+
+# Sound device
+.globl output_init
+.globl output_volume
+.globl output_wave
 
 .set IL, 0x33
 .set ITC, 0x34
