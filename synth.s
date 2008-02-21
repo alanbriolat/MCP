@@ -18,16 +18,12 @@
 .globl output_volume
 .globl output_wave
 
-.set IL, 0x33
-.set ITC, 0x34
+# Note lookup tabel
+.globl note_lookup
 
-.set PRT_TCR, 0x10
+# PRT TCR values
 .set PRT_ENABLED, 0x11
 .set PRT_DISABLED, 0x00
-.set PRT0_RLD_L, 0x0e
-.set PRT0_RLD_H, 0x0f
-.set PRT0_DR_L, 0x0c
-.set PRT0_DR_H, 0x0d
 
 start:
     # Make sure interrupts are disabled during setup
@@ -40,9 +36,11 @@ start:
     call network_init
     # Initialise the output interface
     call output_init
+
+    # Play an A (testing)
     ld a, 0xff
     call output_volume
-    ld a, 0x6b
+    ld a, 0x39
     call set_note
 
     # Reset the network buffer pointer
@@ -146,15 +144,42 @@ int_prt0:
     ld a, (hl)
     out0 (OUTPUT_WAVE), a
 
-    # Put the pointer in the next place
-    inc hl
-    ld a, (hl)
-    cp 0x00
-    jr nz, 0f
+    # Load in the end pointer for comparison
+    ex de, hl
+    ld hl, sample_sine_sustain_end
+    ex de, hl
+
+    # Increment the pointer
+    ld b, 0x00
+    add hl, bc
+
+    # Preserve the pointer while we check it's validity
+    push hl
+
+    # Reset the carry flag
+    or a
+    # current - end
+    sbc hl, de
+    
+    # If the difference is negative, nothing needs to be done
+    jp m, 0f
+
+    # Reset the pointer and add the remainder to it
+    ex de, hl
     ld hl, sample_sine_sustain
+    add hl, de
+
+    # Get rid of the item from the stack into DE
+    pop de
+
+    # Jump over the "if negative" section
+    jr 1f
+
+0:  # Restore the pointer - it's still within the sample
+    pop hl
 
     # Exchange registers, enable interrupts, return
-0:  exx
+1:  exx
     ex af, af
     ei
     reti
@@ -238,151 +263,42 @@ netbuffer:
 # Set the frequency based on the MIDI note
 #
 set_note:
+    # Preserve HL and BC
     push hl
+    push bc
+    # Load the base address
+    ld hl, note_lookup
+    ld b, 0x00
+    # Shift left twice (for 4-byte boundary)
     sla a
-    ld hl, note_table
-    add a, l
-    jr nc, 0f
-    inc h
-0:  ld l, a
+    sla a
+    # Bring the carry onto the high byte
+    rl b
+    # Load the low byte to C
+    ld c, a
+    # Do the offset
+    add hl, bc
+    # Low PRT byte
     ld a, (hl)
     out0 (PRT0_RLD_L), a
+    # High PRT byte
     inc hl
     ld a, (hl)
     out0 (PRT0_RLD_H), a
+    # Divisor
+    inc hl
+    ld a, (hl)
+    # Store it in the registers used by the playback interrupt handler
+    exx
+    ld c, a
+    exx
+    # Restore registers
+    pop bc
     pop hl
+    # Return!
     ret
 
 sample_sine_sustain:
     .byte 0x83,0xa0,0xc1,0xd6,0xe3,0xe4,0xd8,0xc3,0xa4,0x82
-    .byte 0x60,0x40,0x29,0x1b,0x1a,0x25,0x38,0x57,0x77,0x00
-    
-note_table:
-    .int 0x0000    # C -5
-    .int 0x0000    # C#/Db -5
-    .int 0x0000    # D -5
-    .int 0x0000    # D#/Eb -5
-    .int 0x0000    # E -5
-    .int 0x0000    # F -5
-    .int 0x0000    # F#/Gb -5
-    .int 0x0000    # G -5
-    .int 0x0000    # G#/Ab -5
-    .int 0x0000    # A -5
-    .int 0x0000    # A#/Bb -5
-    .int 0x0000    # B -5
-    .int 0x0000    # C -4
-    .int 0x0000    # C#/Db -4
-    .int 0x0000    # D -4
-    .int 0x0000    # D#/Eb -4
-    .int 0x0000    # E -4
-    .int 0x0000    # F -4
-    .int 0x0000    # F#/Gb -4
-    .int 0x0000    # G -4
-    .int 0x0000    # G#/Ab -4
-    .int 0x0000    # A -4
-    .int 0x0000    # A#/Bb -4
-    .int 0x0000    # B -4
-    .int 0x0000    # C -3
-    .int 0x0000    # C#/Db -3
-    .int 0x0000    # D -3
-    .int 0x0000    # D#/Eb -3
-    .int 0x0000    # E -3
-    .int 0x0dbd    # F -3
-    .int 0x0cf7    # F#/Gb -3
-    .int 0x0c03    # G -3
-    .int 0x0b8f    # G#/Ab -3
-    .int 0x0ae5    # A -3
-    .int 0x0a4b    # A#/Bb -3
-    .int 0x09bc    # B -3
-    .int 0x092b    # C -2
-    .int 0x08ab    # C#/Db -2
-    .int 0x0824    # D -2
-    .int 0x07b4    # D#/Eb -2
-    .int 0x0746    # E -2
-    .int 0x06de    # F -2
-    .int 0x067b    # F#/Gb -2
-    .int 0x0626    # G -2
-    .int 0x05ce    # G#/Ab -2
-    .int 0x056c    # A -2
-    .int 0x0529    # A#/Bb -2
-    .int 0x04de    # B -2
-    .int 0x0499    # C -1
-    .int 0x0459    # C#/Db -1
-    .int 0x041c    # D -1
-    .int 0x03dd    # D#/Eb -1
-    .int 0x03a3    # E -1
-    .int 0x0374    # F -1
-    .int 0x0342    # F#/Gb -1
-    .int 0x0310    # G -1
-    .int 0x02e0    # G#/Ab -1
-    .int 0x02b7    # A -1
-    .int 0x0295    # A#/Bb -1
-    .int 0x0270    # B -1
-    .int 0x0249    # C 0
-    .int 0x022b    # C#/Db 0
-    .int 0x020d    # D 0
-    .int 0x01eb    # D#/Eb 0
-    .int 0x01d1    # E 0
-    .int 0x01b8    # F 0
-    .int 0x01a0    # F#/Gb 0
-    .int 0x0189    # G 0
-    .int 0x016e    # G#/Ab 0
-    .int 0x015d    # A 0
-    .int 0x0149    # A#/Bb 0
-    .int 0x0135    # B 0
-    .int 0x0124    # C 1
-    .int 0x0113    # C#/Db 1
-    .int 0x0104    # D 1
-    .int 0x00f4    # D#/Eb 1
-    .int 0x00e7    # E 1
-    .int 0x00dc    # F 1
-    .int 0x00ce    # F#/Gb 1
-    .int 0x00c3    # G 1
-    .int 0x00b8    # G#/Ab 1
-    .int 0x00ac    # A 1
-    .int 0x00a4    # A#/Bb 1
-    .int 0x009b    # B 1
-    .int 0x0094    # C 2
-    .int 0x008b    # C#/Db 2
-    .int 0x0080    # D 2
-    .int 0x007b    # D#/Eb 2
-    .int 0x0074    # E 2
-    .int 0x006d    # F 2
-    .int 0x0067    # F#/Gb 2
-    .int 0x0061    # G 2
-    .int 0x005c    # G#/Ab 2
-    .int 0x0055    # A 2
-    .int 0x0051    # A#/Bb 2
-    .int 0x004d    # B 2
-    .int 0x004b    # C 3
-    .int 0x0046    # C#/Db 3
-    .int 0x0041    # D 3
-    .int 0x003d    # D#/Eb 3
-    .int 0x0039    # E 3
-    .int 0x0036    # F 3
-    .int 0x0033    # F#/Gb 3
-    .int 0x0031    # G 3
-    .int 0x002e    # G#/Ab 3
-    .int 0x002a    # A 3
-    .int 0x0028    # A#/Bb 3
-    .int 0x0026    # B 3
-    .int 0x0024    # C 4
-    .int 0x0022    # C#/Db 4
-    .int 0x0020    # D 4
-    .int 0x0000    # D#/Eb 4
-    .int 0x0000    # E 4
-    .int 0x0000    # F 4
-    .int 0x0000    # F#/Gb 4
-    .int 0x0000    # G 4
-    .int 0x0000    # G#/Ab 4
-    .int 0x0000    # A 4
-    .int 0x0000    # A#/Bb 4
-    .int 0x0000    # B 4
-    .int 0x0000    # C 5
-    .int 0x0000    # C#/Db 5
-    .int 0x0000    # D 5
-    .int 0x0000    # D#/Eb 5
-    .int 0x0000    # E 5
-    .int 0x0000    # F 5
-    .int 0x0000    # F#/Gb 5
-    .int 0x0000    # G 5
+    .byte 0x60,0x40,0x29,0x1b,0x1a,0x25,0x38,0x57,0x77
+sample_sine_sustain_end:
