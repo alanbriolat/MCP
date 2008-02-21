@@ -214,18 +214,37 @@ int_asci0:
     add hl, bc
     ld a, (hl)
 
+    # Preserve in-use registers
     ex de, hl
+    push bc
+    # Load the base address
+    ld hl, note_lookup
+#    ld b, 0x00
+    # Shift left twice (for 4-byte boundary)
     sla a
-    ld hl, note_table
-    add a, l
-    jr nc, 8f
-    inc h
-8:  ld l, a
+    sla a
+    # Bring the carry onto the high byte
+    rl b
+    # Load the low byte to C
+    ld c, a
+    # Do the offset
+    add hl, bc
+    # Low PRT byte
     ld a, (hl)
     out0 (PRT0_RLD_L), a
+    # High PRT byte
     inc hl
     ld a, (hl)
     out0 (PRT0_RLD_H), a
+    # Divisor
+    inc hl
+    ld a, (hl)
+    # Store it in the registers used by the playback interrupt handler
+    exx
+    ld c, a
+    exx
+    # Restore registers
+    pop bc
     ex de, hl
 
     inc hl
