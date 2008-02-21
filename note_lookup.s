@@ -1,3 +1,4 @@
+.globl note_lookup
 note_lookup:
     .int 0x0813, 0x0001  # Midi:   0, Note:     C (-5), Div:  1, Rate: 148.65, Freq: 8.18, Error: (0.02%)
     .int 0x079f, 0x0001  # Midi:   1, Note: C#/Db (-5), Div:  1, Rate: 157.49, Freq: 8.66, Error: (0.02%)

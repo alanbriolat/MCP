@@ -18,6 +18,7 @@ source_rate = 8000.0
 prt_freq = 6144000.0 / 20.0
 
 # Print the label for the table
+print ".globl note_lookup"
 print "note_lookup:"
 
 for octave, midi, note, freq in csv.reader(sys.stdin):
