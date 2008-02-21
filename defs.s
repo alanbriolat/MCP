@@ -1,3 +1,14 @@
+### Interrupt registers
+.set IL, 0x33
+.set ITC, 0x334
+
+### Programmable reload timers
+.set PRT_TCR, 0x10
+.set PRT0_DR_L, 0x0c
+.set PRT0_DR_H, 0x0d
+.set PRT0_RLD_L, 0x0e
+.set PRT0_RLD_H, 0x0f
+
 ### Network interface on ASCI 0
 # I/O addresses
 .set NETWORK_CTRLA, 0x00
