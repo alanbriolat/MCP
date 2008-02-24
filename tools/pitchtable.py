@@ -12,7 +12,7 @@
 import sys, csv
 
 # Source sample properties
-source_freq = 440.0
+source_freq = 62.5
 source_rate = 8000.0
 # The countdown frequency of the PRT
 prt_freq = 6144000.0 / 20.0
@@ -28,14 +28,14 @@ for octave, midi, note, freq in csv.reader(sys.stdin):
 
     # Get a set of parameters for every divisor
     results = list()
-    for div in xrange(1, 33):
+    for div in xrange(1, 257):
         # Calculate the new sample rate
         # Ft / Rt = (Fs * D) / Rs
         # => Rt / Ft = Rs / (Fs * D)
         # => Rt = (Rs * Ft) / (Fs * D)
         rate = (source_rate * freq) / (source_freq * div)
         # Do not want sample rates above ~8kHz
-        if rate > 8200: continue
+        if rate > 8000: continue
         # Calculate the value for the PRT
         prt = int(round(prt_freq / rate))
         # Calculate the frequency given with the current parameters (to see the
