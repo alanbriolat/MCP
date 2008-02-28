@@ -113,6 +113,18 @@ int_int2:
     # Change the instrument
     ld (channel), a
 
+    sla a
+    ld hl, sample_lookup
+    add a, l
+    jr nc, 9f
+    inc h
+9:  ld l, a
+    inc hl
+    ld a, (hl)
+    exx
+    ld h, a
+    exx
+
 2:  ei
     nop
     nop
@@ -193,7 +205,7 @@ int_asci0:
     # Check for end of packet (carriage return)
     cp 0x0d
     # Re-enable interrupts to reduce effect on sound
-    ei
+    #ei
     # If not the end of the packet, go do something with the char
     jr nz, 1f
 
@@ -236,17 +248,17 @@ int_asci0:
     inc hl
     ld a, (hl)
     # Store it in the registers used by the playback interrupt handler
-    di
+    #di
     exx
     ld c, a
     exx
-    ei
+    #ei
     
     # Skip over character handler
     jr 9f
 
 1:  # Increment the character counter
-    inc b
+    #inc b
     # Preserve the character
     ld c, a
     # Get the channel ID
@@ -263,18 +275,21 @@ int_asci0:
     ld (channel_pitch), a
 
     # Skip over volume handler
-    jr 9f
+    jr 8f
 
 2:  # Is this the volume byte?
     inc a
     cp b
-    jr nz, 9f
+    jr nz, 8f
 
     # Store it in the volume variable
     ld a, c
     ld (channel_volume), a
 
-9:  reti
+8:  inc b
+
+9:  ei
+    reti
 
 int_asci1:
     reti
@@ -317,6 +332,24 @@ set_note:
     pop hl
     # Return!
     ret
+
+sample_lookup:
+    .int sample_sine_sustain
+    .int sample_acbass_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
+    .int sample_sine_sustain
 
 .align 8
 sample_acbass_sustain:
