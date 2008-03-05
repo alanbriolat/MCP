@@ -10,7 +10,7 @@ lcd_init:
     # Clear display
     call lcd_clear
     # Display on, cursor on, blink on
-    ld a, 0x0f
+    ld a, 0x0c
     out0 (LCD_CTRL), a
     # Delay ~0.04ms
     ld b, 0x01

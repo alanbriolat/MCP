@@ -51,3 +51,8 @@
 # I/O addresses
 .set LCD_CTRL, 0xb8
 .set LCD_DATA, 0xb9
+
+# DDRAM addresses for parts of the display
+.set LCD_INSTRUMENT, 0x80
+.set LCD_NOTE, 0xc5
+.set LCD_VOL, 0xce

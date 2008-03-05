@@ -19,6 +19,7 @@
 .globl lcd_putchar
 .globl lcd_putbyte
 .globl lcd_print
+.globl delay
 
 # Sound device
 .globl output_init
@@ -47,11 +48,13 @@ start:
     call network_init
     # Initialise the output interface
     call output_init
+    # Initialise the LCD display
+    call lcd_init
 
     # Play an A (testing)
     ld a, 0xff
     call output_volume
-    ld a, 0x45
+    ld a, 0x39
     call set_note
 
     # Reset the character count
@@ -83,6 +86,20 @@ start:
     ld a, PRT_ENABLED
     out0 (PRT_TCR), a
 
+    # Put some stuff on the display
+    ld a, 0x80
+    out0 (LCD_CTRL), a
+    ld b, 0x01
+    call delay
+    ld hl, lcdtextinit_channel
+    call lcd_print
+    ld a, 0xc0
+    out0 (LCD_CTRL), a
+    ld b, 0x01
+    call delay
+    ld hl, lcdtextinit_info
+    call lcd_print
+
     # Enable interrupts
     im 2
     ei
@@ -91,6 +108,11 @@ start:
     # and causes dropped packets
 0:  nop
     jr 0b
+
+lcdtextinit_channel:
+    .byte 'N','o',' ','i','n','s','t','r','u','m','e','n','t',' ',' ',' ',0x00
+lcdtextinit_info:
+    .byte 'N','o','t','e',':',' ',' ',' ',' ',' ','V','o','l',':',' ',' ',0x00
 
 .align 5
 interrupts:
@@ -136,6 +158,26 @@ int_int2:
     exx
     ld h, a
     exx
+
+    # Print the instrument name to the LCD display
+    ld a, (channel)
+    sla a
+    ld hl, channelname_lookup
+    add a, l
+    jr nc, 9f
+    inc h
+9:  ld l, a
+    ld e, (hl)
+    inc hl
+    ld d, (hl)
+    ex de, hl
+    ld a, 0x80
+    out0 (LCD_CTRL), a
+    push bc
+    ld b, 0x01
+    call delay
+    call lcd_print
+    pop bc
 
 2:  ei
     nop
@@ -344,6 +386,56 @@ set_note:
     pop hl
     # Return!
     ret
+
+channelname_lookup:
+    .int channelname_0
+    .int channelname_1
+    .int channelname_2
+    .int channelname_3
+    .int channelname_4
+    .int channelname_5
+    .int channelname_6
+    .int channelname_7
+    .int channelname_8
+    .int channelname_9
+    .int channelname_10
+    .int channelname_11
+    .int channelname_12
+    .int channelname_13
+    .int channelname_14
+    .int channelname_15
+channelname_0:
+    .byte 'A','c','o','u','s','t','i','c',' ','B','a','s','s',' ','0','0',0x00
+channelname_1:
+    .byte 'C','e','l','l','o',' ',' ',' ',' ',' ',' ',' ',' ',' ','0','1',0x00
+channelname_2:
+    .byte 'C','h','u','r','c','h',' ','O','r','g','a','n',' ',' ','0','2',0x00
+channelname_3:
+    .byte 'P','i','a','n','o',' ',' ',' ',' ',' ',' ',' ',' ',' ','0','3',0x00
+channelname_4:
+    .byte 'S','a','x','o','p','h','o','n','e',' ',' ',' ',' ',' ','0','4',0x00
+channelname_5:
+    .byte 'M','e','l','o','d','y',' ',' ',' ',' ',' ',' ',' ',' ','0','5',0x00
+channelname_6:
+    .byte 'V','i','o','l','i','n',' ',' ',' ',' ',' ',' ',' ',' ','0','6',0x00
+channelname_7:
+    .byte 'T','r','o','m','b','o','n','e',' ',' ',' ',' ',' ',' ','0','7',0x00
+channelname_8:
+    .byte 'T','r','u','m','p','e','t',' ',' ',' ',' ',' ',' ',' ','0','8',0x00
+channelname_9:
+    .byte 'F','r','e','n','c','h',' ','H','o','r','n',' ',' ',' ','0','9',0x00
+channelname_10:
+    .byte 'S','y','n','t','h',' ',' ',' ',' ',' ',' ',' ',' ',' ','1','0',0x00
+channelname_11:
+    .byte 'E','l','e','c','.',' ','G','u','i','t','a','r',' ',' ','1','1',0x00
+channelname_12:
+    .byte 'A','c','o','u','s','.',' ','G','u','i','t','a','r',' ','1','2',0x00
+channelname_13:
+    .byte 'F','l','u','t','e',' ',' ',' ',' ',' ',' ',' ',' ',' ','1','3',0x00
+channelname_14:
+    .byte 'P','i','c','c','o','l','o',' ',' ',' ',' ',' ',' ',' ','1','4',0x00
+channelname_15:
+    .byte 'P','e','r','c','u','s','s','i','o','n',' ',' ',' ',' ','1','5',0x00
 
 sample_lookup:
     .int sample_acbass_sustain      # 0
