@@ -15,4 +15,4 @@ note_lookup.s: notes/pitchtable.csv
 
 clean:
 	rm -f *.o
-	rm -f interfacetest paralleltext synth
+	rm -f interfacetest synth
