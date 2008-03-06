@@ -3,6 +3,8 @@
 .globl lcd_putchar
 .globl lcd_putbyte
 .globl lcd_print
+.globl lcd_puthex
+.globl lcd_setlocation
 
 .globl delay
 
@@ -60,5 +62,40 @@ lcd_putbyte:
     call lcd_putchar
     ex af, af
 2:  djnz 0b
+    pop bc
+    ret
+
+lcd_puthex:
+    push af
+    push af
+    rra
+    rra
+    rra
+    rra
+    cp 0x0a
+    jr c, 0f
+    add a, 0x37
+    jr 1f
+0:  add a, 0x30
+1:  call lcd_putchar
+    pop af
+    and 0x0f
+    cp 0x0a
+    jr c, 0f
+    add  a, 0x37
+    jr 1f
+0:  add a, 0x30
+1:  call lcd_putchar
+    pop af
+    ret
+
+#
+# Set the DDRAM location to the value in A
+#
+lcd_setlocation:
+    push bc
+    out0 (LCD_CTRL), a
+    ld b, 0x01
+    call delay
     pop bc
     ret
