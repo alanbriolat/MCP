@@ -1,13 +1,18 @@
 ### Interrupt registers
+# I/O addresses
 .set IL, 0x33
-.set ITC, 0x334
+.set ITC, 0x34
 
 ### Programmable reload timers
+# I/O addresses
 .set PRT_TCR, 0x10
 .set PRT0_DR_L, 0x0c
 .set PRT0_DR_H, 0x0d
 .set PRT0_RLD_L, 0x0e
 .set PRT0_RLD_H, 0x0f
+# PRT Timer Control Register values
+.set PRT_ENABLED, 0x11
+.set PRT_DISABLED, 0x00
 
 ### Network interface on ASCI 0
 # I/O addresses
@@ -51,7 +56,6 @@
 # I/O addresses
 .set LCD_CTRL, 0xb8
 .set LCD_DATA, 0xb9
-
 # DDRAM addresses for parts of the display
 .set LCD_INSTRUMENT, 0x80
 .set LCD_NOTE, 0xc5
