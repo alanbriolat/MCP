@@ -5,11 +5,9 @@
 ### 
 # Import functions from other files
 ###
-
 # Networking
 .globl network_init
 .globl network_getchar
-
 # Terminal
 .globl terminal_init
 .globl terminal_getchar
@@ -17,27 +15,23 @@
 .globl terminal_putbyte
 .globl terminal_print
 .globl terminal_newline
-
 # Keypad
 .globl keypad_getbyte
-
 # LCD Panel
 .globl lcd_init
 .globl lcd_clear
 .globl lcd_putchar
 .globl lcd_putbyte
 .globl lcd_print
-
 # Sound device
 .globl output_init
 .globl output_volume
 .globl output_wave
-
 # Utilities
 .globl delay
-
 # Note lookup table
 .globl note_lookup
+
 
 ###
 # Start of program
@@ -111,11 +105,16 @@ start:
     im 2
     ei
 
-    # Wait until something happens - using nop because halt takes too long
-    # and causes dropped packets
-0:  nop
-    jr 0b
+    # Wait until something happens - using NOP because for some reason HALT
+    # results in incorrect network data (even though the correct number of 
+    # bytes is received
+idleloop:
+    nop
+    jr idleloop
 
+###
+# Initial display data for the LCD text display
+###
 lcdtextinit_channel:
     .byte 'N','o',' ','i','n','s','t','r','u','m','e','n','t',' ',' ',' ',0x00
 lcdtextinit_info:
