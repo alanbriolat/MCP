@@ -1,6 +1,21 @@
 ######################################################
 ## MCP 2008 - networked MIDI instrument synthesiser ##
 ######################################################
+#
+# Notes:
+#   
+#   Network data not buffered, so buffer overruns not 
+#   possible.
+#
+#   The network data counter B is used to check packet
+#   length and discard incomplete packets.
+#
+#   B is allowed to be overwritten in rare cases, for 
+#   example on keypad press.  This only causes packet
+#   loss, which will happen during a keypad press 
+#   anyway due to the continuous interrupt.
+#
+######################################################
 
 ### 
 # Import functions from other files
@@ -73,33 +88,19 @@ start:
     # Reset the character count
     ld b, 0x00
 
-    # Set the instrument (channel 0)
+    # Set the channel (default: 0)
     ld a, 0x00
-    ld (channel), a
+    call set_channel
 
-    # Set the wave sample
-    exx
-    ld de, sample_acbass_sustain
-    exx
+    # Write the "info" line to the LCD
+    ld a, 0xc0
+    call lcd_setlocation
+    ld hl, lcdtextinit_info
+    call lcd_print
 
-    
     # Enable interrupts on PRT0
     ld a, PRT_ENABLED
     out0 (PRT_TCR), a
-
-    # Put some stuff on the display
-    ld a, 0x80
-    out0 (LCD_CTRL), a
-    ld b, 0x01
-    call delay
-    ld hl, lcdtextinit_channel
-    call lcd_print
-    ld a, 0xc0
-    out0 (LCD_CTRL), a
-    ld b, 0x01
-    call delay
-    ld hl, lcdtextinit_info
-    call lcd_print
 
     # Enable interrupts
     im 2
@@ -112,6 +113,7 @@ idleloop:
     nop
     jr idleloop
 
+
 ###
 # Initial display data for the LCD text display
 ###
@@ -119,6 +121,62 @@ lcdtextinit_channel:
     .byte 'N','o',' ','i','n','s','t','r','u','m','e','n','t',' ',' ',' ',0x00
 lcdtextinit_info:
     .byte 'N','o','t','e',':',' ',' ',' ',' ',' ','V','o','l',':',' ',' ',0x00
+
+
+###
+# Set the current channel
+#
+# Arguments: the 4-bit channel ID in the accumulator
+#
+# The channel number is stored left-shifted by one for efficiency reasons - 
+# all usage of this value needs this form (16-bit lookup tables).  Interrupts
+# must be disabled when this is called to avoid double-swapping.
+###
+channel:
+    .byte 0x00
+set_channel:
+    # Shift and store the channel number
+    sla a
+    ld (channel), a
+    
+    ### Set the sample
+    # Perform the table lookup
+    ld hl, sample_lookup
+    add a, l
+    jr nc, 0f
+    inc h
+0:  ld l, a
+    # Skip the low byte - .align 8 means we don't need it
+    inc hl
+    # Load into the "shadow" D register - the high byte of the sample
+    # playback address (stop interrupts during this time to avoid
+    # double-swapping of registers)
+    ld a, (hl)
+    exx
+    ld d, a
+    exx
+
+    ### Show the instrument name
+    # Set the LCD location
+    ld a, LCD_INSTRUMENT
+    call lcd_setlocation
+    # Get the channel number back
+    ld a, (channel)
+    # Perform the table lookup
+    ld hl, channelname_lookup
+    add a, l
+    jr nc, 0f
+    inc h
+0:  ld l, a
+    ld e, (hl)
+    inc hl
+    ld d, (hl)
+    ex de, hl
+    # Print to the LCD
+    call lcd_print
+
+    ret
+
 
 ###
 # Interrupt vector table, aligned to 5-bit boundary so that the 9
@@ -153,40 +211,7 @@ int_int2:
 1:  ld a, 0xff
     ld (keypad_lockout), a
     call keypad_getbyte
-    # Change the instrument
-    ld (channel), a
-
-    sla a
-    ld hl, sample_lookup
-    add a, l
-    jr nc, 9f
-    inc h
-9:  ld l, a
-    inc hl
-    ld a, (hl)
-    exx
-    ld d, a
-    exx
-
-    # Print the instrument name to the LCD display
-    ld a, (channel)
-    sla a
-    ld hl, channelname_lookup
-    add a, l
-    jr nc, 9f
-    inc h
-9:  ld l, a
-    ld e, (hl)
-    inc hl
-    ld d, (hl)
-    ex de, hl
-    ld a, 0x80
-    out0 (LCD_CTRL), a
-    push bc
-    ld b, 0x01
-    call delay
-    call lcd_print
-    pop bc
+    call set_channel
 
 2:  ei
     nop
@@ -196,12 +221,12 @@ int_int2:
     ld (keypad_lockout), a
     reti
 
-#
+###
 # PRT0 Interrupt handler - wave output
 #
 # Uses only the shadow registers, so that the interrupt handler finishes quickly
 # and can happen during other interrupts without making a mess
-#
+###
 int_prt0:
     # Disable interrupts, exchange registers
     di
@@ -242,12 +267,9 @@ int_csio:
 #   C = temp character holding
 #
 # Memory:
-#   channel = current instrument channel
 #   channel_pitch = most recent pitch value
 #   channel_volume = most recent volume
 #
-channel:
-    .byte 0x00
 channel_pitch:
     .byte 0x00
 channel_volume:
@@ -326,8 +348,6 @@ int_asci0:
     ld c, a
     # Get the channel ID
     ld a, (channel)
-    # Shift left to get the packet position of pitch
-    sla a
     
     # Is this the pitch byte?
     cp b
