@@ -3,6 +3,10 @@
 .set IL, 0x33
 .set ITC, 0x34
 
+### DMA/WAIT
+# I/O addresses
+.set DCNTL, 0x32
+
 ### Programmable reload timers
 # I/O addresses
 .set PRT_TCR, 0x10

@@ -30,12 +30,9 @@ lcd_clear:
 # Put a character to the LCD text display
 #`
 lcd_putchar:
-    exx                     # Exchange registers to preserve B (faster than
-                            # push/pop, and this is a common operation)
     out (LCD_DATA), a       # Put the character to the display
     ld b, 0x01              # Delay for ~0.04ms to allow display to catch up
     call delay
-    exx                     # Exchange registers back again
     ret
 
 lcd_print:
@@ -66,8 +63,8 @@ lcd_putbyte:
     ret
 
 lcd_puthex:
-    push af
-    push af
+    ld d, a
+    and 0xf0
     rra
     rra
     rra
@@ -77,16 +74,20 @@ lcd_puthex:
     add a, 0x37
     jr 1f
 0:  add a, 0x30
-1:  call lcd_putchar
-    pop af
+1:  out (LCD_DATA), a       # Put the character to the display
+    ld b, 0x01              # Delay for ~0.04ms to allow display to catch up
+    call delay
+    ld a, d
     and 0x0f
     cp 0x0a
     jr c, 0f
     add  a, 0x37
     jr 1f
 0:  add a, 0x30
-1:  call lcd_putchar
-    pop af
+1:  out (LCD_DATA), a       # Put the character to the display
+    ld b, 0x01              # Delay for ~0.04ms to allow display to catch up
+    call delay
+    ld a, d
     ret
 
 #

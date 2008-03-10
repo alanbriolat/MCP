@@ -38,6 +38,7 @@
 .globl lcd_putchar
 .globl lcd_putbyte
 .globl lcd_print
+.globl lcd_puthex
 .globl lcd_setlocation
 # Sound device
 .globl output_init
@@ -61,6 +62,10 @@ start:
     # Disable DRAM refresh
     ld a, 0x00
     out0 (0x36), a
+    # Disable mem wait state generation
+    in0 a, (DCNTL)
+    and 0x3f
+    out0 (DCNTL), a
 
     ### Interrupt setup
     # Get the address of the interrupt table
@@ -314,6 +319,8 @@ int_asci0:
     cp b
     jr nz, 2f
     ex af, af
+    # 7bit -> 8bit
+    sla a
     ld h, a
 2:  # Increment char counter
     inc b
@@ -349,6 +356,10 @@ int_asci0_packethandler:
     out0 (OUTPUT_VOL), a
 
     ##### Volume LCD output here #####
+    ld a, LCD_VOL
+    call lcd_setlocation
+    ld a, h
+    call lcd_puthex
 
     ##### Pitch LCD output here #####
 
@@ -382,45 +393,6 @@ int_asci0_packethandler:
 
 int_asci1:
     reti
-
-# 
-# Set the frequency based on the MIDI note
-#
-set_note:
-    # Preserve HL and BC
-    push hl
-    push bc
-    # Load the base address
-    ld hl, note_lookup
-    ld b, 0x00
-    # Shift left twice (for 4-byte boundary)
-    sla a
-    sla a
-    # Bring the carry onto the high byte
-    rl b
-    # Load the low byte to C
-    ld c, a
-    # Do the offset
-    add hl, bc
-    # Low PRT byte
-    ld a, (hl)
-    out0 (PRT0_RLD_L), a
-    # High PRT byte
-    inc hl
-    ld a, (hl)
-    out0 (PRT0_RLD_H), a
-    # Divisor
-    inc hl
-    ld a, (hl)
-    # Store it in the registers used by the playback interrupt handler
-    exx
-    ld c, a
-    exx
-    # Restore registers
-    pop bc
-    pop hl
-    # Return!
-    ret
 
 ###
 # Channel names for the LCD text display
