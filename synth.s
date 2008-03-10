@@ -226,6 +226,8 @@ int_int2:
 #
 # Uses only the shadow registers, so that the interrupt handler finishes quickly
 # and can happen during other interrupts without making a mess
+#
+# Registers used - DE, AF, C
 ###
 int_prt0:
     # Disable interrupts, exchange registers
@@ -250,14 +252,135 @@ int_prt0:
     ei
     reti
 
-int_prt1:
+int_prt1: reti
+int_dma0: reti
+int_dma1: reti
+int_csio: reti
+
+###
+# Network data interrupt handler
+#
+# Sections are of two classes - those during which interrupts are locked
+# out, and those where interrupts are enabled.  Where interrupts are disabled,
+# the "shadow" registers are used, carefully avoiding those used by the PRT
+# handler.
+#
+###
+int_asci0:
+    ###
+    # Critical section - interrupts disabled, shadow registers used
+    #
+    # Volume and pitch are H'L' respectively (rather than the order they
+    # are in incoming data) as a slight efficiency measure - the pitch needs
+    # to be used as the low byte of a 16-bit add anyway.
+    #
+    # Registers used:
+    #   A'F', AF
+    #   H'      - Volume
+    #   L'      - Pitch
+    #   B'      - character counter
+    ###
+    di
+    # Use shadow registers
+    exx
+    # Clear interrupt
+    ld a, NETWORK_CTRLA_VALUE
+    out0 (NETWORK_CTRLA), a
+    # Wait until byte is available
+0:  in0 a, (NETWORK_STAT)
+    bit 7, a
+    jr z, 0b
+    # Get the byte
+    in0 a, (NETWORK_RX)
+
+    # Check for end of packet (carriage return), jump to packet handler
+    cp 0x0d
+    jr z, int_asci0_packethandler
+
+    ### See if this is one of the bytes we want, and store it
+    # Preserve character
+    ex af, af
+    # Pitch byte? (channel << 1)
+    ld a, (channel)
+    cp b
+    jr nz, 1f
+    ex af, af
+    ld l, a
+    # Skip over volume handler
+    jr 2f
+1:  # Volume byte? (channel << 1 + 1)
+    inc a
+    cp b
+    jr nz, 2f
+    ex af, af
+    ld h, a
+2:  # Increment char counter
+    inc b
+    # Flip registers back
+    exx
+    # Safe to re-enable interrupts now
+    ei
+    # Nothing else to do, return
     reti
-int_dma0:
+
+int_asci0_packethandler:
+    # Copy the data
+    push hl
+    # Check if the packet was the correct length
+    ld a, 0x21
+    cp b
+    # Reset the char counter
+    ld b, 0x00
+    # Flip the registers back
+    exx
+    # If the packet was invalid, clean up and return
+    jr z, 1f
+    pop hl
+    ei
     reti
-int_dma1:
+    # Re-enable interrupts - from this point onwards, safe to allow the PRT
+    # interrupt as we're not using its registers any more
+1:  ei
+    # Get the data
+    pop hl
+    # Output the volume
+    ld a, h
+    out0 (OUTPUT_VOL), a
+
+    ##### Volume LCD output here #####
+
+    ##### Pitch LCD output here #####
+
+    # Prepare pitch for 16-bit add
+    ld h, 0x00
+    # Pitch << 2 (4-byte lookup table)
+    sla l
+    sla l
+    rl h
+    # Perform lookup
+    ld de, note_lookup
+    add hl, de
+    # Low PRT byte
+    ld a, (hl)
+    out0 (PRT0_RLD_H), a
+    # High PRT byte
+    inc hl
+    ld a, (hl)
+    out0 (PRT0_RLD_H), a
+    # Divisor
+    inc hl
+    ld a, (hl)
+    # Store the divisor in the shadow register
+    di
+    exx
+    ld c, a
+    exx
+    ei
+    # All done, return
     reti
-int_csio:
-    reti
+
+
+
 
 # 
 # Network data interrupt handler
@@ -274,8 +397,7 @@ channel_pitch:
     .byte 0x00
 channel_volume:
     .byte 0x00
-
-int_asci0:
+int_asci0_old:
     # Disable interrupts
     di
     # Clear the interrupt on the ASCI
