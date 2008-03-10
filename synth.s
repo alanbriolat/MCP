@@ -38,6 +38,7 @@
 .globl lcd_putchar
 .globl lcd_putbyte
 .globl lcd_print
+.globl lcd_setlocation
 # Sound device
 .globl output_init
 .globl output_volume
