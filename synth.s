@@ -363,7 +363,7 @@ int_asci0_packethandler:
     add hl, de
     # Low PRT byte
     ld a, (hl)
-    out0 (PRT0_RLD_H), a
+    out0 (PRT0_RLD_L), a
     # High PRT byte
     inc hl
     ld a, (hl)
