@@ -48,6 +48,7 @@
 .globl delay
 # Note lookup table
 .globl note_lookup
+.globl notename_lookup
 
 
 ###
@@ -355,13 +356,11 @@ int_asci0_packethandler:
     ld a, h
     out0 (OUTPUT_VOL), a
 
-    ##### Volume LCD output here #####
+    ### Volume LCD output
     ld a, LCD_VOL
     call lcd_setlocation
     ld a, h
     call lcd_puthex
-
-    ##### Pitch LCD output here #####
 
     # Prepare pitch for 16-bit add
     ld h, 0x00
@@ -369,8 +368,28 @@ int_asci0_packethandler:
     sla l
     sla l
     rl h
+    # Move to DE
+    ex de, hl
+
+    ### Pitch LCD output
+    ld hl, notename_lookup
+    add hl, de
+    ld a, LCD_NOTE
+    call lcd_setlocation
+    ld a, (hl)
+    call lcd_putchar
+    inc hl
+    ld a, (hl)
+    call lcd_putchar
+    inc hl
+    ld a, (hl)
+    call lcd_putchar
+    inc hl
+    ld a, (hl)
+    call lcd_putchar
+
     # Perform lookup
-    ld de, note_lookup
+    ld hl, note_lookup
     add hl, de
     # Low PRT byte
     ld a, (hl)

@@ -94,9 +94,7 @@ lcd_puthex:
 # Set the DDRAM location to the value in A
 #
 lcd_setlocation:
-    push bc
     out0 (LCD_CTRL), a
     ld b, 0x01
     call delay
-    pop bc
     ret
