@@ -12,8 +12,8 @@
 import sys, csv
 
 # Source sample properties
-source_freq = 62.5
-source_rate = 8000.0
+source_freq = 2.0
+source_rate = 256.0
 # The countdown frequency of the PRT
 prt_freq = 6144000.0 / 20.0
 
