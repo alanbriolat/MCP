@@ -30,6 +30,7 @@
 .globl terminal_putbyte
 .globl terminal_print
 .globl terminal_newline
+.globl terminal_clearint
 # Keypad
 .globl keypad_getbyte
 # LCD Panel
@@ -105,6 +106,12 @@ start:
     ld hl, lcdtextinit_info
     call lcd_print
 
+    # Write welcome text to the terminal
+    ld hl, terminaltext_welcome
+    call terminal_print
+    ld hl, terminaltext_prompt
+    call terminal_print
+
     # Enable interrupts on PRT0
     ld a, PRT_ENABLED
     out0 (PRT_TCR), a
@@ -129,6 +136,34 @@ lcdtextinit_channel:
 lcdtextinit_info:
     .byte 'N','o','t','e',':',' ',' ',' ',' ',' ','V','o','l',':',' ',' ',0x00
 
+###
+# Terminal display data
+###
+terminaltext_welcome:
+    #.byte MCP2008 - Networked MIDI synthesiser\r\nCommands:\r\n i: Change instrument without changing channel\r\n
+    .byte 0x0d,0x0a
+    .byte 0x0d,0x0a
+    .byte 'M','C','P','2','0','0','8',' ','-',' '
+    .byte 'N','e','t','w','o','r','k','e','d',' ','M','I','D','I',' '
+    .byte 's','y','n','t','h','e','s','i','s','e','r'
+    .byte 0x0d,0x0a
+    .byte 0x0d,0x0a
+    .byte 'C','o','m','m','a','n','d','s',':'
+    .byte 0x0d,0x0a
+    .byte ' ','i',':',' ','C','h','a','n','g','e',' '
+    .byte 'i','n','s','t','r','u','m','e','n','t',' '
+    .byte 'w','i','t','h','o','u','t',' ','c','h','a','n','g','i','n','g',' '
+    .byte 'c','h','a','n','n','e','l'
+    .byte 0x0d,0x0a
+    .byte ' ','c',':',' ','C','h','a','n','g','e',' '
+    .byte 'c','h','a','n','n','e','l',' ','w','i','t','h','o','u','t',' '
+    .byte 'c','h','a','n','g','i','n','g',' '
+    .byte 'i','n','s','t','r','u','m','e','n','t'
+    .byte 0x0d,0x0a
+    .byte 0x00
+terminaltext_prompt:
+    .byte 0x0d,0x0a
+    .byte '>',' ', 0x00
 
 ###
 # Set the current channel
@@ -410,7 +445,117 @@ int_asci0_packethandler:
     # All done, return
     reti
 
+###
+# Terminal interface interrupt handler
+#
+# Effectively implements an interactive terminal for certain actions.  Since
+# the terminal is not part of essential operation, it is not excessively 
+# efficient, and *will* cause temporary sound glitches.
+###
 int_asci1:
+    # Disable interrupts
+    di
+    # Preserve registers
+    push af
+    push hl
+    # Get the character
+    call terminal_getchar
+
+    # Find the command
+    cp 'i' ; jr z, command_i
+    cp 'c' ; jr z, command_c
+
+    # Fall-through - command not recognised
+    ld a, '?'
+    call terminal_putchar
+    jr 9f
+
+command_i:
+    # Echo the command back, plus a space
+    call terminal_putchar
+    ld a, ' '
+    call terminal_putchar
+    # Wait on the next character
+    call terminal_getchar
+    # Clear the interrupt that will have been generated
+    ex af, af
+    call terminal_clearint
+    ex af, af
+    # Echo the value back to the terminal
+    call terminal_putchar
+    # Convert to a 4-bit number 0-f
+    cp 0x3a # <= '9'
+    jr nc, 0f
+    sub 0x30
+    jr 1f
+0:  sub 0x57
+1:  # Shift to 2-byte boundary
+    sla a
+    # Perform the table lookup
+    ld hl, sample_lookup
+    add a, l
+    jr nc, 0f
+    inc h
+0:  ld l, a
+    # Skip the low byte - .align 8 means we don't need it
+    inc hl
+    # Load into the "shadow" D register - the high byte of the sample
+    # playback address
+    ld a, (hl)
+    exx
+    ld d, a
+    exx
+    jr 9f
+
+command_c:
+    # Echo the command back, plus a space
+    call terminal_putchar
+    ld a, ' '
+    call terminal_putchar
+    # Wait on the next character
+    call terminal_getchar
+    # Clear the interrupt that will have been generated
+    ex af, af
+    call terminal_clearint
+    ex af, af
+    # Echo character back to the terminal
+    call terminal_putchar
+    cp 0x3a # <= '9'
+    jr nc, 0f
+    sub 0x30
+    jr 1f
+0:  sub 0x57
+1:  # Shift left to 2-byte boundary
+    sla a
+    # Save channel
+    ld (channel), a
+    # Set the LCD location
+    ld a, LCD_INSTRUMENT
+    call lcd_setlocation
+    # Get the channel number back
+    ld a, (channel)
+    # Perform the table lookup
+    ld hl, channelname_lookup
+    add a, l
+    jr nc, 0f
+    inc h
+0:  ld l, a
+    ld e, (hl)
+    inc hl
+    ld d, (hl)
+    ex de, hl
+    # Print to the LCD
+    call lcd_print
+    jr 9f
+
+9:  # Write the prompt again
+    ld hl, terminaltext_prompt
+    call terminal_print
+    # Restore registers
+    pop hl
+    pop af
+    # Enable interrupts and return
+    ei
     reti
 
 ###
