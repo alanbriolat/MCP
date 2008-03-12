@@ -23,6 +23,7 @@
 # Networking
 .globl network_init
 .globl network_getchar
+.globl network_clearint
 # Terminal
 .globl terminal_init
 .globl terminal_getchar
@@ -160,10 +161,25 @@ terminaltext_welcome:
     .byte 'c','h','a','n','g','i','n','g',' '
     .byte 'i','n','s','t','r','u','m','e','n','t'
     .byte 0x0d,0x0a
+    .byte ' ','p',':',' ','P','i','a','n','o',' ','m','o','d','e'
+    .byte 0x0d,0x0a
     .byte 0x00
 terminaltext_prompt:
     .byte 0x0d,0x0a
     .byte '>',' ', 0x00
+terminaltext_pianomode:
+    .byte 0x0d,0x0a
+    .byte 'E','n','t','e','r','i','n','g',' ','"','p','i','a','n','o','"',' '
+    .byte 'm','o','d','e',' ','(','C','t','r','l','+','D',' ','t','o',' '
+    .byte 'e','x','i','t',')','.','.','.'
+    .byte 0x0d,0x0a
+    .byte 0x00
+terminaltext_networkmode:
+    .byte 0x0d,0x0a
+    .byte 'E','n','t','e','r','i','n','g',' ','n','e','t','w','o','r','k',' '
+    .byte 'm','o','d','e','.','.','.'
+    .byte 0x0d,0x0a
+    .byte 0x00
 
 ###
 # Set the current channel
@@ -308,6 +324,8 @@ int_csio: reti
 # handler.
 #
 ###
+mode:
+    .byte 0x00
 int_asci0:
     ###
     # Critical section - interrupts disabled, shadow registers used
@@ -334,6 +352,15 @@ int_asci0:
     jr z, 0b
     # Get the byte
     in0 a, (NETWORK_RX)
+
+    # Check if we are in network mode
+    ex af, af
+    ld a, (mode)
+    or a
+    jr z, 0f
+    jr 2f
+
+0:  ex af, af
 
     # Check for end of packet (carriage return), jump to packet handler
     cp 0x0d
@@ -445,6 +472,9 @@ int_asci0_packethandler:
     # All done, return
     reti
 
+set_note:
+
+
 ###
 # Terminal interface interrupt handler
 #
@@ -462,13 +492,15 @@ int_asci1:
     call terminal_getchar
 
     # Find the command
-    cp 'i' ; jr z, command_i
-    cp 'c' ; jr z, command_c
+    cp 'i' ; jp z, command_i
+    cp 'c' ; jp z, command_c
+    cp 'p' ; jp z, command_p
+    cp 0x04 ; jp z, command_eof
 
     # Fall-through - command not recognised
     ld a, '?'
     call terminal_putchar
-    jr 9f
+    jp 8f
 
 command_i:
     # Echo the command back, plus a space
@@ -505,7 +537,7 @@ command_i:
     exx
     ld d, a
     exx
-    jr 9f
+    jp 8f
 
 command_c:
     # Echo the command back, plus a space
@@ -546,12 +578,27 @@ command_c:
     ex de, hl
     # Print to the LCD
     call lcd_print
-    jr 9f
+    jp 8f
 
-9:  # Write the prompt again
+command_p:
+    call terminal_putchar
+    ld a, 0x01
+    ld (mode), a
+    ld hl, terminaltext_pianomode
+    call terminal_print
+    jp 9f
+
+command_eof:
+    ld a, 0x00
+    ld (mode), a
+    ld hl, terminaltext_networkmode
+    call terminal_print
+    jp 8f
+
+8:  # Write the prompt again
     ld hl, terminaltext_prompt
     call terminal_print
-    # Restore registers
+9:  # Restore registers
     pop hl
     pop af
     # Enable interrupts and return
