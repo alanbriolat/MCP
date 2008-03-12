@@ -4,6 +4,7 @@
 .globl terminal_putbyte
 .globl terminal_print
 .globl terminal_newline
+.globl terminal_clearint
 
 #
 # Initialise the ASCI channel for the terminal
@@ -83,15 +84,19 @@ terminal_putbyte:
     ex af, af
 2:  djnz 0b
     pop bc
+    ex af, af
     call terminal_newline
+    ex af, af
     ret
 
 #
 # Write a newline to the terminal
 #
 terminal_newline:
-    ld hl, crlf
-    call terminal_print
+    ld a, 0x0d
+    call terminal_putchar
+    ld a, 0x0a
+    call terminal_putchar
     ret
 
 # Carriage-return, line-feed
