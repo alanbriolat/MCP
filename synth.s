@@ -129,6 +129,12 @@ idleloop:
     jr idleloop
 
 
+### GLOBAL VARIABLES
+mode:
+    .byte 0x00
+piano_offset:
+    .byte 0x00
+
 ###
 # Initial display data for the LCD text display
 ###
@@ -324,8 +330,6 @@ int_csio: reti
 # handler.
 #
 ###
-mode:
-    .byte 0x00
 int_asci0:
     ###
     # Critical section - interrupts disabled, shadow registers used
@@ -473,7 +477,29 @@ int_asci0_packethandler:
     reti
 
 set_note:
-
+    ld l, a
+    ld h, 0x00
+    sla l
+    sla l
+    rl h
+    ex de, hl
+    ld hl, note_lookup
+    add hl, de
+    # Low PRT byte
+    ld a, (hl)
+    out0 (PRT0_RLD_L), a
+    # High PRT byte
+    inc hl
+    ld a, (hl)
+    out0 (PRT0_RLD_H), a
+    # Divisor
+    inc hl
+    ld a, (hl)
+    # Store the divisor in the shadow register
+    exx
+    ld c, a
+    exx
+    ret
 
 ###
 # Terminal interface interrupt handler
@@ -491,11 +517,46 @@ int_asci1:
     # Get the character
     call terminal_getchar
 
-    # Find the command
+    # See if we are in piano mode
+    ex af, af
+    ld a, (mode)
+    or a
+    jr z, 2f
+
+    ex af, af
+
+    cp 0x04 ; jp z, command_eof
+    cp '+' ; jr nz, 1f
+    ld a, (piano_offset)
+    add a, 0x0c
+    jr nc, 0f
+    ld a, 0x00
+0:  ld (piano_offset), a
+    jp 9f
+1:  cp '-' ; jr nz, 1f
+    ld a, (piano_offset)
+    sub 0x0c
+    jr nc, 0f
+    ld a, 0x00
+0:  ld (piano_offset), a
+    jp 9f
+
+1:  ld hl, piano_lookup
+    add a, l
+    jr nc, 0f
+    inc h
+0:  ld l, a
+    ld a, (hl)
+    ld hl, piano_offset
+    add a, (hl)
+    call set_note
+    jp 9f
+
+    # See if it's a command
+2:  ex af, af
     cp 'i' ; jp z, command_i
     cp 'c' ; jp z, command_c
     cp 'p' ; jp z, command_p
-    cp 0x04 ; jp z, command_eof
 
     # Fall-through - command not recognised
     ld a, '?'
@@ -584,6 +645,8 @@ command_p:
     call terminal_putchar
     ld a, 0x01
     ld (mode), a
+    ld a, 0xff
+    out0 (OUTPUT_VOL), a
     ld hl, terminaltext_pianomode
     call terminal_print
     jp 9f
@@ -658,6 +721,26 @@ channelname_14:
 channelname_15:
     .byte 'P','e','r','c','u','s','s','i','o','n',' ',' ',' ',' ','1','5',0x00
 
+###
+# Piano lookup
+###
+piano_lookup:
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 #0
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 #1 
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 #2
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 #3
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 #4
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00 #5
+    .byte 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+    .byte 0x00,0x00,0x07,0x04,0x03,0x00,0x00,0x06 #6
+    .byte 0x08,0x00,0x0a,0x00,0x00,0x0b,0x09,0x00
+    .byte 0x00,0x00,0x00,0x01,0x00,0x00,0x05,0x00 #7
+    .byte 0x02,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 
 ### 
 # Instrument sample table
