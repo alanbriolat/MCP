@@ -2,7 +2,8 @@
 
 #
 # Calculate PRT values for all of the MIDI notes, outputting them along
-# with the increment values in a way that can be pasted into h180 source
+# with the increment values in a way that can be pasted into h180 source.
+# Also generates a note name lookup table.
 # 
 # The table contains 4 bytes per note: PRT Low, PRT High, Div, NULL
 #
