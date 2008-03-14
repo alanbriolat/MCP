@@ -17,9 +17,20 @@ source_rate = 256.0
 # The countdown frequency of the PRT
 prt_freq = 6144000.0 / 20.0
 
-# Print the label for the table
-print ".globl note_lookup"
-print ".globl notename_lookup"
+# Comments
+print """#
+# MIDI note lookup tables
+#
+# note_lookup:      PRT low, PRT high, Divisor, NULL
+# notename_lookup:  4 characters representing the note and octave
+#"""
+
+# Exposing the labels
+print """
+# Expose labels
+.globl note_lookup
+.globl notename_lookup
+"""
 
 input = list(csv.reader(sys.stdin))
 
@@ -58,11 +69,12 @@ for octave, midi, note, freq in input:
     # Get the best result
     errorfactor, error, prt, div, rate, effective = results[0]
 
-    # Print the assembler for the entryOA
+    # Print the assembler for the entry
     print "    .int 0x%04x, 0x00%02x  # Midi: %3s, Note: %2s (%2s), Div: %2s, Rate: %4.2f, Freq: %4.2f, Error: (%.2f%%)" \
             % (prt, div, midi, note, octave, div, rate, freq, error * 100)
 
-print "notename_lookup:"
+print """
+notename_lookup:"""
 for octave, midi, note, freq in input:
     print "    .byte '" + \
             "','".join([c for c in "%2ls%2s" % (note, octave)]) + "'"
