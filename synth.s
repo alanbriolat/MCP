@@ -23,7 +23,6 @@
 # Networking
 .globl network_init
 .globl network_getchar
-.globl network_clearint
 # Terminal
 .globl terminal_init
 .globl terminal_getchar
