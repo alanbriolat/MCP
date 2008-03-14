@@ -108,20 +108,27 @@ terminal_newline:
 # 
 terminal_putbyte:
     push bc
+    # Number of times to rotate (8, for 8 bits)
     ld b, 0x08
+    # Rotate left, copying bit 7 to the carry flag
 0:  rlca
+    # Use the carry flag te decide between writing 1 or 0
     jr nc, 1f
     ex af, af
+    # Write 1
     ld a, 0x31
     call terminal_putchar
     ex af, af
     jr 2f
 1:  ex af, af
+    # Write 0
     ld a, 0x30
     call terminal_putchar
     ex af, af
+    # Loop until the whole byte is done
 2:  djnz 0b
     pop bc
+    # Terminate with a newline
     ex af, af
     call terminal_newline
     ex af, af
