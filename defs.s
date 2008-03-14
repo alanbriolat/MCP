@@ -1,3 +1,9 @@
+############################################################
+# Global definitions
+#
+# I/O port addresses and constant values for various devices
+############################################################
+
 ### Interrupt registers
 # I/O addresses
 .set IL, 0x33

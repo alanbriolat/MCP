@@ -1,29 +1,16 @@
-.globl keypad_getchar
+############################################################
+# Keypad
+#
+# Functions and data needed for keypad handling
+############################################################
+
+# Expose functions
 .globl keypad_getbyte
 
-.globl KEYPAD_DATA
-
 # 
-# Get a character from the keypad
-#
-# Returns the ASCII representation of the current keypress into the
-# accumulator.
-#
-keypad_getchar:
-    push hl
-    in0 a, (KEYPAD_DATA)
-    and 0x0f
-    ld hl, keypad_charmap
-    add a, l
-    jr nc, 0f
-    inc h
-0:  ld l, a
-    ld a, (hl)
-    pop hl
-    ret
-
-# 
-# Get the actual value of the keypad key
+# Get the value of the key currently pressed (the value 
+# represented on the key, not the value given by the 
+# hardware)
 #
 keypad_getbyte:
     push hl
@@ -39,14 +26,8 @@ keypad_getbyte:
     ret
 
 #
-# Keypad character map
-#
-keypad_charmap:
-    .byte 'D','E','F','0','C','9','8','7'
-    .byte 'B','6','5','4','A','3','2','1'
-#
-# Keypad byte map (from the actual keypad values to what is 
-# represented on the keys)
+# Lookup table to map between a hardware keypad value and
+# the value represented on the key
 #
 keypad_bytemap:
     .byte 0x0d,0x0e,0x0f,0x00,0x0c,0x09,0x08,0x07

@@ -36,9 +36,7 @@
 .globl keypad_getbyte
 # LCD Panel
 .globl lcd_init
-.globl lcd_clear
 .globl lcd_putchar
-.globl lcd_putbyte
 .globl lcd_print
 .globl lcd_puthex
 .globl lcd_setlocation
@@ -46,8 +44,6 @@
 .globl output_init
 .globl output_volume
 .globl output_wave
-# Utilities
-.globl delay
 # Note lookup table
 .globl note_lookup
 .globl notename_lookup
