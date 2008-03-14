@@ -1,7 +1,7 @@
 ############################################################
 # Network
 #
-# Functions for handling the network device
+# Functions for handling the network device (ASCI channel 0)
 ############################################################
 
 # Expose functions
@@ -10,12 +10,10 @@
 
 # 
 # Initialise the network interface (see defs.s for the actual
-# settings being used - NETWORK_*_VALUE).  This includes 
-# clearing the interrupt from the last character the monitor
-# program read.
+# settings being used - NETWORK_*_VALUE).
 #
 network_init:
-    # Clear interrupt, set operating mode
+    # Set operating mode
     ld a, NETWORK_CTRLA_VALUE
     out0 (NETWORK_CTRLA), a
     # Set baud rate

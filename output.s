@@ -14,8 +14,7 @@
 .globl output_wave
 
 # 
-# Initialise the parallel I/O controller to use both
-# channels as outputs
+# Initialise the parallel I/O controller
 #
 output_init:
     # Set the mode to 0 - channels A, B and C are outputs
@@ -24,7 +23,7 @@ output_init:
     ret
 
 # 
-# Output a volume scaling level
+# Output a volume level
 #
 output_volume:
     out0 (OUTPUT_VOL), a

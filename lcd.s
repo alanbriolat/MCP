@@ -46,10 +46,14 @@ lcd_putchar:
 # the address in HL to the display
 #
 lcd_print:
+    # Get a character
 0:  ld a, (hl)
+    # Check for the end of the string
     cp 0x00
     jr z, 1f
+    # Write the character
     call lcd_putchar
+    # Go to next location and repeat
     inc hl
     jr 0b
 1:  ret
