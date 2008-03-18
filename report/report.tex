@@ -39,12 +39,15 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 
 % Title page
 \maketitle
+%\vfill
+\begin{center}
+1234 words
+\end{center}
 \pagebreak
 % Table of Contents
 \tableofcontents
+
 \pagebreak
-
-
 \section{Introduction}
 
 The aim of the project is the development and implementation of an embedded system capable of 
@@ -67,18 +70,35 @@ connection and starting execution at a specified memory location.
 
 % TODO: More info on the output
 Output is to be via a supplied $8\Omega$ impedance speaker.  Any other hardware required for the 
-output is to be designed and built jointly with a partner, since repeated changing of hardware is 
-impractical, and the design of the hardware will heavily influence the way in which the software is 
-written.
+output is to be designed and built jointly with a partner, since repeated changing of hardware on a 
+shared system for testing individual solutions is impractical, and the design of the hardware will 
+heavily influence the way in which the software is written.
 
+\pagebreak
 \section{Functional Overview}
 
+\begin{figure}[!htbp]
+\centering
+\includegraphics[totalheight=0.55\textheight,angle=90]{images/overview.png}
+\caption{System overview}\label{fig:systemoverview}
+\end{figure}
+
+The diagram in Figure \ref{fig:systemoverview} shows the conceptual architecture of my system.  The 
+basic idea is that various inputs are processed and in some way modify the state of the system, and 
+this state in turn affects the operation of the continuously-running wave table playback.
+
+The most important element of the system is the real-time conversion of network data into
+
+\pagebreak
 \section{Design and Implementation}
 
+\pagebreak
 \section{Testing and Evaluation}
 
+\pagebreak
 \section{Technical Specification}
 
+\pagebreak
 \section{Further Work}
 
 

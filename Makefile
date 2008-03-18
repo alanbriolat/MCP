@@ -1,8 +1,13 @@
 %.o: defs.s %.s
 	h180 as -o $@ $^
 
+.PHONY: report
+
 all: synth
 
+report:
+	$(MAKE) -C $@
+	cp report/report.pdf report.pdf
 
 interfacetest: interfacetest.o terminal.o network.o keypad.o lcd.o utils.o
 	h180 ld -T 8000 -C c000 -o $@ $^
