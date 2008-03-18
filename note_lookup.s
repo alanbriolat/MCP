@@ -1,5 +1,14 @@
+#
+# MIDI note lookup tables
+#
+# note_lookup:      PRT low, PRT high, Divisor, NULL
+# notename_lookup:  4 characters representing the note and octave
+#
+
+# Expose labels
 .globl note_lookup
 .globl notename_lookup
+
 note_lookup:
     .int 0x0126, 0x0001  # Midi:   0, Note:  C (-5), Div:  1, Rate: 1046.50, Freq: 8.18, Error: (0.15%)
     .int 0x0115, 0x0001  # Midi:   1, Note: C# (-5), Div:  1, Rate: 1108.73, Freq: 8.66, Error: (0.03%)
@@ -129,6 +138,7 @@ note_lookup:
     .int 0x0027, 0x00b6  # Midi: 125, Note:  F ( 5), Div: 182, Rate: 7859.55, Freq: 11175.30, Error: (0.22%)
     .int 0x0027, 0x00c0  # Midi: 126, Note: F# ( 5), Div: 192, Rate: 7893.21, Freq: 11839.82, Error: (0.21%)
     .int 0x0027, 0x00cc  # Midi: 127, Note:  G ( 5), Div: 204, Rate: 7870.65, Freq: 12543.85, Error: (0.08%)
+
 notename_lookup:
     .byte ' ','C','-','5'
     .byte 'C','#','-','5'
