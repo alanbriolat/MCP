@@ -121,14 +121,129 @@ ID & Instrument \\
 \caption{Network data channels}\label{tab:channelids}
 \end{table}
 
+\subsection{Network}
+
 % FIXME: contradiction with actual design?
 The network handler deals with collecting data from the incoming bytes on the serial interface 
 connected to the network and running the packet handler when the end of a packet is detected.  The 
-carriage return is interpreted as the end of the packet, and the incoming bytes are counted and this 
-count checked at the end of the packet to enable the discarding of incomplete packets.  
+carriage return is interpreted as the end of the packet, and the incoming bytes are counted and 
+checked to detect and ignore incomplete packets.
+
+When the end of a complete packet is detected, the packet handler is run.  The volume is converted 
+from a 7-bit to 8-bit value and sent to the volume output, and also converted to hexadecimal and 
+displayed on the LCD.  The MIDI note is used as the index in a lookup table for the PRT reload value 
+and wave table divisor (see \ref{wavetables}), and also in another lookup table for a 4-character 
+representation of the note which is shown on the LCD.
+
+\subsection{Wave tables}
+\label{wavetables}
+% TODO: double check the maths!
+
+In my design, all frequencies of the instruments are synthesised from the same wave table sample, 
+therefore a way is needed to perform this frequency conversion.  A sample has two important 
+properties that are interdependent - the sample rate and the frequency.  When changing either of 
+these properties, the following property holds:
+
+\begin{center}
+${{F_{target}} \over {F_{source}}} = {{R_{target}} \over {R_{source}}}$
+\end{center}
+
+In other words, if a particular note is recorded at a particular sample rate, then the difference of 
+the frequency when played is proportional to the sample rate it is played at.  In this case, we are 
+aiming to play a particular frequency, so the required sample rate can be calculated with:
+
+\begin{center}
+${{R_{target}} = {{F_{target} \times {R_{source}}} \over {F_{source}}}}$
+\end{center}
+
+Unfortunately, at higher playback frequencies the necessary sample rate will be impractically high, 
+so an additional way of changing the frequency is needed.  If for example only every other sample 
+from the wave table is played, without changing the sample rate, this will double the frequency of 
+the note being played, since the entire sample is being played twice as fast.  More generally, if a 
+divisor $D$ is introduced, then ${F_{target}} = {F_{source} \times D}$.
+
+To combine the two methods, $F_{target}$ can be replaced with ${F_{target}} \times D$.  With a 
+little re-arrangement, the following equation can be obtained:
+
+\begin{center}
+${{R_{target}} \times D} = {{{F_{target} \times {R_{source}}} \over {F_{source}}}}$
+\end{center}
+
+See \ref{notelookuptables} for how this conversion is implemented to generate the MIDI note lookup 
+tables.
 
 \pagebreak
 \section{Design and Implementation}
+
+\subsection{Keypad handler}
+
+The keypad is a slightly awkward device for trying to get a single value from - it interrupts the 
+whole time that the key is being pressed.  When implementing the keypad handler, this was the main 
+problem I had to overcome.
+
+My solution was to create a kind of lockout for that particular interrupt handler.  The result is a 
+variable that acts as an ``already handled'' flag for keypad interrupts.  When a keypad interrupt 
+happens, the flag is checked - if it's non-zero, then the interrupt gets effectively ignored.  If 
+it's zero, the interrupt handler executes as normal.  At the end of the interrupt handler, there are 
+a few NOP instructions before setting the lockout variable back to zero and returning from the 
+interrupt, but \emph{after} the interrupts are re-enabled.  The idea is that if the key is still 
+pressed, it will interrupt during those NOPs, before the flag is cleared, and those interrupts will 
+get ignored, but on the very last interrupt it will complete the handler.  This completely 
+eliminates the possibility of accidental repeats.
+
+For comparison, the alternative solution was to insert a delay after handling the keypress to allow 
+time for the key to be released.  Unfortunately, that method was less than ideal, since if the delay 
+was too long it would result in the system seeming unresponsive, and if too short then repeated 
+interrupts would occur.  I felt it was better to maintain a direct responsiveness between action and 
+reaction.
+
+\subsection{Note lookup tables}
+\label{notelookuptables}
+
+% TODO: language check: hereafter/herein?
+In the submitted source code, "tools/pitchtable.py" and "tools/pitchtable.csv" (hereafter referred 
+to as ``the script'' and ``the pitch table'' respectively) together form my method for creating 
+lookup tables for the MIDI note.
+
+The data that needed to be contained in the lookup tables was the PRT value, divisor and note name 
+(including octave) for every MIDI note.  Because during the implementation I planned to work on the 
+LCD information after the sound playback was working correctly, the note names were put in a 
+separate lookup table to the other data.
+
+% TODO: expand on comparison of formats
+Because the most efficient way to use a lookup value for a table is to multiply it by a power of two 
+(left shifting), blocks of data in the lookup table are also going to be $2^n$ bytes long.  However, 
+the data for note playback is 3 bytes (a 16-bit PRT value plus an 8-bit divisor), so I was faced 
+with the choice of having two lookup tables for the playback data or wasting $1\over4$ of the space 
+used by the table.  After writing the necessary assembler for reading from both possible formats and 
+analysing their execution times, I found that the single table method resulted in faster code.  
+Combined with the fact I was not under pressure to conserve memory, I chose the single table method.
+
+% TODO: expand on the result sorting
+The Python script written to generate the lookup tables is based on the concept outlined in 
+\ref{wavetables} for calculating the sample rates and divisors.  The actual method used involves 
+working out the sample rate for every divisor between 1 and 255, removing all those resulting in a 
+sample rate above 8kHz (a sensible maximum given the speed of the CPU), sorting the results in a way 
+which tries to get the best combination of low error margin and high sample rate and using the first 
+result (giving the PRT value and divisor).  The lookup table data format is:
+
+\begin{center}
+\begin{tabular}{c l}
+Byte & Usage\\
+\hline
+0 & PRT value - Low byte\\
+1 & PRT value - High byte\\
+2 & Divisor\\
+3 & Unused/null\\
+\end{tabular}
+\end{center}
+
+The script also produces a second table which contains a 4-character representation of the note 
+created from the octave number and note name.
+
+The pitch table contains the octave numbers, MIDI note numbers, note names and frequencies in 
+Comma-Separated Values format.  The script reads these in from standard input to generate the 
+tables, which are output on standard output.
 
 \pagebreak
 \section{Testing and Evaluation}
@@ -139,6 +254,7 @@ count checked at the end of the packet to enable the discarding of incomplete pa
 \pagebreak
 \section{Further Work}
 
+% Merging the 2 MIDI lookup tables into one
 
 \appendix
 
