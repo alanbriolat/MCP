@@ -141,8 +141,8 @@ representation of the note which is shown on the LCD.
 
 In my design, all frequencies of the instruments are synthesised from the same wave table sample, 
 therefore a way is needed to perform this frequency conversion.  A sample has two important 
-properties that are interdependent - the sample rate and the frequency.  When changing either of 
-these properties, the following property holds:
+interdependant properties - the sample rate and the frequency.  When changing either of these 
+properties, the following property holds:
 
 \begin{center}
 ${{F_{target}} \over {F_{source}}} = {{R_{target}} \over {R_{source}}}$
@@ -200,19 +200,13 @@ reaction.
 \subsection{Note lookup tables}
 \label{notelookuptables}
 
-% TODO: language check: hereafter/herein?
-In the submitted source code, "tools/pitchtable.py" and "tools/pitchtable.csv" (hereafter referred 
-to as ``the script'' and ``the pitch table'' respectively) together form my method for creating 
-lookup tables for the MIDI note.
-
-The data that needed to be contained in the lookup tables was the PRT value, divisor and note name 
-(including octave) for every MIDI note.  Because during the implementation I planned to work on the 
-LCD information after the sound playback was working correctly, the note names were put in a 
-separate lookup table to the other data.
+Lookup tables are needed to contain the PRT value, divisor and note name (including octave) for 
+every MIDI note.  The note names are in a separate lookup table to the other data as having an LCD 
+information display was a lower priority than working sound playback and was implemented much later.
 
 % TODO: expand on comparison of formats
-Because the most efficient way to use a lookup value for a table is to multiply it by a power of two 
-(left shifting), blocks of data in the lookup table are also going to be $2^n$ bytes long.  However, 
+The most efficient way to use a lookup value for a table is to multiply it by a power of two (left 
+shifting), so blocks of data in the lookup table are also going to be $2^n$ bytes long.  However, 
 the data for note playback is 3 bytes (a 16-bit PRT value plus an 8-bit divisor), so I was faced 
 with the choice of having two lookup tables for the playback data or wasting $1\over4$ of the space 
 used by the table.  After writing the necessary assembler for reading from both possible formats and 
@@ -220,12 +214,13 @@ analysing their execution times, I found that the single table method resulted i
 Combined with the fact I was not under pressure to conserve memory, I chose the single table method.
 
 % TODO: expand on the result sorting
-The Python script written to generate the lookup tables is based on the concept outlined in 
-\ref{wavetables} for calculating the sample rates and divisors.  The actual method used involves 
-working out the sample rate for every divisor between 1 and 255, removing all those resulting in a 
-sample rate above 8kHz (a sensible maximum given the speed of the CPU), sorting the results in a way 
-which tries to get the best combination of low error margin and high sample rate and using the first 
-result (giving the PRT value and divisor).  The lookup table data format is:
+The Python script I wrote to generate the lookup tables ("tools/pitchtable.py") is based on the 
+concept outlined in \ref{wavetables} for calculating the sample rates and divisors.  The actual 
+method used involves working out the sample rate for every divisor between 1 and 255, removing all 
+those resulting in a sample rate above 8kHz (a sensible maximum given the speed of the CPU), sorting 
+the results in a way which tries to get the best combination of low error margin and high sample 
+rate and using the first result (giving the PRT value and divisor).  The lookup table data format 
+is:
 
 \begin{center}
 \begin{tabular}{c l}
@@ -241,9 +236,9 @@ Byte & Usage\\
 The script also produces a second table which contains a 4-character representation of the note 
 created from the octave number and note name.
 
-The pitch table contains the octave numbers, MIDI note numbers, note names and frequencies in 
-Comma-Separated Values format.  The script reads these in from standard input to generate the 
-tables, which are output on standard output.
+The pitch table ("tools/pitchtable.csv") contains the octave numbers, MIDI note numbers, note names 
+and frequencies in Comma-Separated Values format.  The Python script reads these in from standard 
+input to generate the tables, which are written to standard output.
 
 \pagebreak
 \section{Testing and Evaluation}
