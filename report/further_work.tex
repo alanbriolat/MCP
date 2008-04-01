@@ -1,4 +1,56 @@
 % vim: fo=aw2tq tw=100 spell
 \section{Further Work}
 
+\subsection*{Note lookup tables}
+% TODO: expand on this, write something about *_print functions?
+Since the major use of the note lookup tables is by the network handler, which uses all values of 
+both tables, given a little more time it would make sense to combine the playback and display 
+information into a single lookup table.  The new lookup table would contain blocks of 8 bytes, 
+however the data only amounts to 7 bytes.  This would actually be useful, as the 8th byte would be 
+set to 00h, which is the string terminator used by "lcd_print"\footnote{Line 48 of "lcd.s"}.  If the 
+new lookup table format was
+
+\begin{center}
+\begin{tabular}{r | c | c | c | c | c | c | c | c}
+Byte & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
+\hline
+Usage & PRT low & PRT high & Divisor & \multicolumn{4}{c |}{LCD info.} & 00h \\
+\end{tabular}
+\end{center}
+
+the relevant section\footnote{Lines 471--519 of "synth.s"} of the network packet handler might look 
+more like this:
+
+\begin{h180}
+# (MIDI note is already in L)
+# Multiply by 8 to address 8-byte blocks
+ld h, 0x08
+mlt hl
+# Perform lookup (offset from base address)
+ld de, notedata_lookup
+add hl, de
+# Low PRT byte
+ld a, (hl)
+out0 (PRT0_RLD_L), a
+# High PRT byte
+inc hl
+ld a, (hl)
+out0 (PRT0_RLD_H), a
+# Divisor
+inc hl
+ld a, (hl)
+# Store the divisor in the shadow register (interrupts
+# disabled to prevent double-swapping)
+di
+exx
+ld c, a
+exx
+ei
+# Set the location on the LCD
+ld a, LCD_NOTE
+call lcd_setlocation
+# Output the note name
+inc hl
+call lcd_print
+\end{h180}
 % Merging the 2 MIDI lookup tables into one

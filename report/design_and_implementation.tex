@@ -57,7 +57,7 @@ using
 
 \[PRT = round\big(\frac{F_{CPU}}{D_{PRT}\times{}R_{target}}\big)\]
 
-where $F_{CPU}$ is the CPU frequency (6144000) and $D_{PRT}$ is the PRT divisor (20).  Because the 
+where $F_{CPU}$ is the CPU frequency (6,144,000) and $D_{PRT}$ is the PRT divisor (20).  Because the 
 result has been rounded to the nearest integer, the effective frequency will be different to the 
 desired frequency.  The effective frequency is calculated by using the $PRT$ and $R_{target}$ 
 calculations in reverse:
@@ -79,16 +79,12 @@ table is $1.13\%$, with an average sample rate of just under 7kHz.  Other sortin
 had varied results, generally creating high sample rates with high error margins, or low error 
 margins with bad sample rates.
 
-The format of the resulting lookup table is
-
+The format of the resulting lookup table is:
 \begin{center}
-\begin{tabular}{c l}
-Byte & Usage\\
+\begin{tabular}{c | c | c | c | c}
+Byte & 0 & 1 & 2 & 3 \\
 \hline
-0 & PRT value --- Low byte\\
-1 & PRT value --- High byte\\
-2 & Divisor\\
-3 & Unused/null\\
+Usage & PRT low & PRT high & Divisor & 00h \\
 \end{tabular}
 \end{center}
 
