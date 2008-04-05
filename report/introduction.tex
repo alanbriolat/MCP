@@ -1,26 +1,31 @@
 % vim: fo=aw2tq tw=100 spell
 \section{Introduction}
 
-The aim of the project is the development and implementation of an embedded system capable of 
-synthesising one or more musical instruments, and playing these instruments in a real-time manner 
-based on a serial network data stream.
+The aim of this project is to develop and implement an embedded system capable of synthesising one 
+or more musical instruments, and playing these instruments in real-time based on a serial network 
+data stream.
 
 The base hardware supplied for this task is a Single-Board Computer (SBC) based on the Hitachi 64180 
-CPU --- a Z180 clone, which in turn is an extended Z80, with a few extra instructions and most of 
-the useful peripherals built in (serial I/O controller, DMA controller, programmable reload timers).  
-This CPU is clocked faster than the Z80, at 6.144MHz, and has a physical address space of 512kB 
-courtesy of a programmable Memory Management Unit (MMU), but shares the Z80's 64kB logical address 
-space since the instruction set only allows 16-bit memory addresses.  Some instructions have also 
-been implemented more efficiently, requiring fewer clock cycles to complete.
+CPU.  The 64180 is effectively an extended Z80, with several useful peripherals integrated, 
+including Programmable Reload Timer (PRT), Direct Memory Access (DMA) and serial I/O controllers.  
+It also includes a few extra instructions, mostly related to using the inbuilt peripherals, but 
+notably including multiplication, and performance improvements over many Z80 instructions.  The CPU 
+is clocked at 6.144MHz, and has a physical address space of 512KB, courtesy of an inbuilt Memory 
+Management Unit (MMU), however it's logical address space is limited to 64KB, inheriting the Z80's 
+use of 16-bit memory addresses.
 
 In addition to the 64180 chip, many other useful peripherals are part of the SBC, including an 
 I$^{2}$C controller, Real-Time Clock (RTC), 24-bit parallel digital I/O, 4-bit hexadecimal keypad 
-and $16\times2$ character LCD text display.  The board is fitted with 96kB of RAM, and a ROM 
+and $16\times2$ character LCD text display.  The board is fitted with 96KB of RAM, and a ROM 
 containing a very basic operating system that, among other things, supports loading software over a 
 serial connection and starting execution at a specified memory location.
 
+The audio output of the system developed should be suitable for use with an $8\Omega$-impedance 
+speaker.  Additional hardware required to generate this output will be designed and built jointly 
+with a lab partner.
+
 % TODO: More info on the output
-Output is to be via a supplied $8\Omega$ impedance speaker.  Any other hardware required for the 
-output is to be designed and built jointly with a partner, since repeated changing of hardware on a 
-shared system for testing individual solutions is impractical, and the design of the hardware will 
-heavily influence the way in which the software is written.
+%Output is to be via a supplied $8\Omega$ impedance speaker.  Any other hardware required for the 
+%output is to be designed and built jointly with a partner, since repeated changing of hardware on a 
+%shared system for testing individual solutions is impractical, and the design of the hardware will 
+%heavily influence the way in which the software is written.

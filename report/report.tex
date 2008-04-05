@@ -1,9 +1,17 @@
 % vim: fo=aw2tq tw=100 spell
-\documentclass[11pt]{article}
+\documentclass[10pt]{article}
 \setlength{\parskip}{0.5\baselineskip}
 
 % Necessary packages
 %\usepackage{pslatex}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\renewcommand*\ttdefault{txtt}
+%\usepackage[scaled]{beramono}
+%\usepackage{textcomp}
+%\usepackage{pxfonts}
+%\usepackage{bookman}
+
 \usepackage{listings}
 \usepackage{shortvrb}
 \usepackage[pdftex]{color,graphicx}
@@ -34,6 +42,7 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 % Document info
 \title{Microcomputer Communications Project (MCP)}
 \author{Examination number: Y2265520}
+% TODO: Lab partner's examination number!!!
 
 \begin{document}
 
@@ -55,6 +64,13 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 \include{further_work}
 
 \appendix
+
+\section{Circuit diagram}
+\label{appendix:circuit}
+\begin{center}
+\includegraphics[totalheight=0.95\textheight]{images/output-schematic.png}
+\end{center}
+
 
 \pagebreak
 \begin{thebibliography}{99}

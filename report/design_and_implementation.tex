@@ -55,7 +55,7 @@ calculating the sample rate using
 (rearranged from a similar equation in \ref{wavetables}) and then converting this to a PRT value 
 using
 
-\[PRT = round\big(\frac{F_{CPU}}{D_{PRT}\times{}R_{target}}\big)\]
+\[PRT = round\left(\frac{F_{CPU}}{D_{PRT}\times{}R_{target}}\right)\]
 
 where $F_{CPU}$ is the CPU frequency (6,144,000) and $D_{PRT}$ is the PRT divisor (20).  Because the 
 result has been rounded to the nearest integer, the effective frequency will be different to the 
@@ -66,7 +66,7 @@ calculations in reverse:
 
 The error, E is calculated with the following, giving a value in the range 0--1:
 
-\[E = \frac{|F_{effective} - F_{target}|}{F_{target}}\]
+\[E = \frac{\left|F_{effective} - F_{target}\right|}{F_{target}}\]
 
 % TODO: to joke or not to joke?
 For each note, the results for all the divisors are collected together, discarding those where the 
