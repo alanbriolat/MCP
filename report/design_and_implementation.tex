@@ -1,7 +1,49 @@
 % vim: fo=aw2tq tw=100 spell
 \section{Design and Implementation}
 
+\subsection{Audio output}
+\label{sec:design:audio_output}
+
+% TODO: sound/music theory somewhere?
+The output device was jointly designed with my lab partner.  The most important property of any 
+output device developed was obviously the ability to output a waveform that would audibly represent 
+the intended musical note (and instrument).  However, since the network data also includes volume 
+information, this needed to be taken into account.  This could be achieved in two ways:
+\begin{enumerate}
+\item Implementing a volume scaling function in software
+\item Scaling the volume with more programmable hardware
+\end{enumerate}
+The first option has the advantage of giving the simplest, and therefore easiest, hardware to 
+design.  Unfortunately, scaling the volume of a waveform during playback would involve modifying the 
+amplitude of every step of a waveform with multiplication.  This would result in playback being a 
+very processor-intensive task, which is fairly impractical for the speed and simplicity of our CPU.  
+On the other hand, implementing volume scaling in hardware removes this burden from the CPU, freeing 
+up the processing time for other tasks.
+
+We chose to implement the volume scaling in hardware, and gave the hardware a very simple interface 
+--- an 8-bit ``waveform'' input and an 8-bit ``volume'' input.  This would later make outputting a 
+waveform a very fast software task --- one I/O operation per sample in the waveform, and one I/O 
+operation for every volume value received.
+
+The conversion from the two 8-bit values to the final audio signal can be described as a two-stage 
+digital-to-analogue converter (DAC) with a final amplification stage.  A simple circuit of a DAC and 
+inverting op-amp will give an output voltage between ground and $-V_{ref}$ proportional to the 
+digital input (where $V_{ref}$ is the reference voltage of the DAC).  We decided to use this concept 
+to develop a two-stage DAC consisting of two such circuits, where the output of the first became the 
+$V_{ref}$ of the second.  The first becomes the ``volume'' DAC, effectively pre-scaling any signal 
+output by the second, which would receive the waveform sample values.  Note that this design does 
+not prevent the use of software scaling if desired, but gives the attractive possibility of avoiding 
+it.
+
+To interface with the SBC, the DAC inputs were connected to ports A and B of the parallel I/O 
+controller.  Though the network data contained 7-bit volume values, and the hardware needed 8-bit 
+values, we decided not to ``left-shift'' the data in hardware (wiring parallel I/O data pins 0--6 to 
+DAC data pins 1--7) to maintain flexibility of the hardware.  (In my solution the volume values are 
+left-shifted in software.)
+
+
 \subsection{Keypad handler}
+\label{sec:design:keypad_handler}
 
 The keypad is a slightly awkward device for trying to get a single value --- it interrupts the whole 
 time that the key is being pressed.  When implementing the keypad handler, this was the main problem 
@@ -18,10 +60,9 @@ get ignored, but on the very last interrupt it will complete the handler.  This 
 eliminates the possibility of accidental repeats.
 
 For comparison, the alternative solution was to insert a delay after handling the keypress to allow 
-time for the key to be released.  Unfortunately, that method was less than ideal, since if the delay 
-was too long it would result in the system seeming unresponsive, and if too short then repeated 
-interrupts would occur.  I felt it was better to maintain a direct responsiveness between action and 
-reaction.
+time for the key to be released.  I found this method to be less than ideal, since if the delay is 
+too long it can result in the system seeming unresponsive, and if too short then repeated interrupts 
+can occur.  I felt it was better to maintain a direct response between action and reaction.
 
 \subsection{Note lookup tables}
 \label{notelookuptables}
@@ -80,6 +121,7 @@ had varied results, generally creating high sample rates with high error margins
 margins with bad sample rates.
 
 The format of the resulting lookup table is:
+\begin{nowordcount}
 \begin{center}
 \begin{tabular}{c | c | c | c | c}
 Byte & 0 & 1 & 2 & 3 \\
@@ -87,6 +129,7 @@ Byte & 0 & 1 & 2 & 3 \\
 Usage & PRT low & PRT high & Divisor & 00h \\
 \end{tabular}
 \end{center}
+\end{nowordcount}
 
 The script also produces a second table which contains a 4-character representation of the note 
 created from the octave number and note name.

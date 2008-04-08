@@ -2,6 +2,9 @@
 \documentclass[10pt]{article}
 \setlength{\parskip}{0.5\baselineskip}
 
+% Flag for whether or not this is the wordcount version
+\newif\ifnotwc\notwctrue
+
 % Necessary packages
 %\usepackage{pslatex}
 \usepackage[T1]{fontenc}
@@ -14,14 +17,16 @@
 
 \usepackage{listings}
 \usepackage{shortvrb}
+\ifnotwc
 \usepackage[pdftex]{color,graphicx}
 \usepackage[pdftex]{hyperref}
+% Coloured links, not frames
+\hypersetup{colorlinks=true}
+\fi
+\usepackage{comment}
 
 % Use "foo" for short verbatim
 \MakeShortVerb{\"}
-
-% Coloured links, not frames
-\hypersetup{colorlinks=true}
 
 % Define a listings language for h180
 \lstdefinelanguage{h180}{
@@ -38,6 +43,14 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 % Define the global listing style
 \lstset{lineskip=-1pt, basicstyle=\small\ttfamily, frame=lines, framerule=0.2pt}
 
+% Lets get rid of some things if we're wordcounting
+\ifnotwc
+\includecomment{nowordcount}
+\else
+\usepackage{xcomment}
+\excludecomment{nowordcount}
+\fi
+
 
 % Document info
 \title{Microcomputer Communications Project (MCP)}
@@ -46,16 +59,22 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 
 \begin{document}
 
+% Keep the front matter out of the wordcount
+\ifnotwc
+
 % Title page
 \maketitle
 %\vfill
 \begin{center}
 1234 words
 \end{center}
-\pagebreak
+\newpage
 % Table of Contents
 \tableofcontents
 
+\fi % ifnotwc
+
+% Include all the sections
 \include{introduction}
 \include{functional_overview}
 \include{design_and_implementation}
@@ -63,14 +82,16 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 \include{technical_specification}
 \include{further_work}
 
+% Don't want the end matter getting in the way of my word count!!!
+\ifnotwc
+
 \appendix
 
 \section{Circuit diagram}
-\label{appendix:circuit}
 \begin{center}
-\includegraphics[totalheight=0.95\textheight]{images/output-schematic.png}
+\label{appendix:circuit_diagram}
+\includegraphics[totalheight=0.92\textheight]{images/output-schematic.png}
 \end{center}
-
 
 \pagebreak
 \begin{thebibliography}{99}
@@ -78,5 +99,7 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 % \emph{Title},
 % \url{http://} (year)
 \end{thebibliography}
+
+\fi % ifnotwc
 
 \end{document}

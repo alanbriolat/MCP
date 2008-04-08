@@ -1,11 +1,13 @@
 % vim: fo=aw2tq tw=100 spell
 \section{Functional Overview}
 
+\begin{nowordcount}
 \begin{figure}[htbp]
 \centering
 \includegraphics[totalheight=0.55\textheight,angle=90]{images/overview.png}
 \caption{System overview}\label{fig:systemoverview}
 \end{figure}
+\end{nowordcount}
 
 The diagram in Figure \ref{fig:systemoverview} shows the conceptual architecture of my system.  The 
 basic idea is that various inputs are processed and in some way modify the state of the system, and 
@@ -20,6 +22,7 @@ return (0Dh).  The mapping of channel identifiers to instruments is shown in Tab
 \ref{tab:channelids}.  For the ``Percussion'' channel, the volume level represents the particular 
 percussion instrument to play rather than the volume at which to play it.
 
+\begin{nowordcount}
 \begin{table}[htbp]
 \centering
 \begin{tabular}[bp]{c l}
@@ -44,6 +47,7 @@ ID & Instrument \\
 \end{tabular}
 \caption{Network data channels}\label{tab:channelids}
 \end{table}
+\end{nowordcount}
 
 \subsection{Network}
 

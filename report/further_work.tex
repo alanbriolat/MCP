@@ -10,6 +10,7 @@ however the data only amounts to 7 bytes.  This would actually be useful, as the
 set to 00h, which is the string terminator used by "lcd_print"\footnote{Line 48 of "lcd.s"}.  If the 
 new lookup table format was
 
+\begin{nowordcount}
 \begin{center}
 \begin{tabular}{r | c | c | c | c | c | c | c | c}
 Byte & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
@@ -17,10 +18,12 @@ Byte & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
 Usage & PRT low & PRT high & Divisor & \multicolumn{4}{c |}{LCD info.} & 00h \\
 \end{tabular}
 \end{center}
+\end{nowordcount}
 
 the relevant section\footnote{Lines 471--519 of "synth.s"} of the network packet handler might look 
 more like this:
 
+\begin{nowordcount}
 \begin{h180}
 # (MIDI note is already in L)
 # Multiply by 8 to address 8-byte blocks
@@ -53,4 +56,5 @@ call lcd_setlocation
 inc hl
 call lcd_print
 \end{h180}
+\end{nowordcount}
 % Merging the 2 MIDI lookup tables into one
