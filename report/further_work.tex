@@ -1,8 +1,7 @@
 % vim: fo=aw2tq tw=100 spell
 \section{Further Work}
 
-\subsection*{Note lookup tables}
-% TODO: expand on this, write something about *_print functions?
+\subsection{Note lookup tables}
 Since the major use of the note lookup tables is by the network handler, which uses all values of 
 both tables, given a little more time it would make sense to combine the playback and display 
 information into a single lookup table.  The new lookup table would contain blocks of 8 bytes, 
@@ -57,4 +56,32 @@ inc hl
 call lcd_print
 \end{h180}
 \end{nowordcount}
-% Merging the 2 MIDI lookup tables into one
+
+
+\subsection{Alternative Design}
+
+During the late stages of the project I started development of an alternative design, which I 
+abandoned due to time constraints.  The idea was that instead of the current software processing and 
+output of samples from a wave table, I would create hardware that could be programmed with an 
+instrument number and note and would play the correct sound at the correct frequency.   This would 
+leave the CPU with only network data and visual output to handle, but would also allow the extra CPU 
+time to bu used for other functions, such as an advanced visualisation on an LCD matrix display.
+
+My rudimentary ideas for this included the following:
+
+\begin{itemize}
+\item A ROM chip containing all of the wave table samples (probably at 256 bytes per instrument).
+\item An 8-bit counter connected to the lowest 8 bits of the wave table ROM address for stepping 
+through the instrument sample.
+\item A 4-bit register connected to the next 4 bits of the wave table address for selecting the 
+instrument.
+\item A 16-bit programmable reload timer running at a clock divider of 2, for controlling the 
+playback frequency --- the output of this is the clock for the 8-bit address counter.  (Plus two 
+8-bit registers to store the reload value.)
+\item A note lookup table in software for the PRT values.
+\end{itemize}
+
+I built and experimented with the PRT section of this idea, and could successfully generate 
+frequencies between 46.875Hz and 3.072MHz when using a system clock of 6.144MHz, by setting the 
+reload value manually using two 8-bit DIP switches.
+% TODO: continue this section

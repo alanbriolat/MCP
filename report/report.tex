@@ -2,6 +2,9 @@
 \documentclass[10pt]{article}
 \setlength{\parskip}{0.5\baselineskip}
 
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
 % Flag for whether or not this is the wordcount version
 \newif\ifnotwc\notwctrue
 
@@ -21,7 +24,8 @@
 \usepackage[pdftex]{color,graphicx}
 \usepackage[pdftex]{hyperref}
 % Coloured links, not frames
-\hypersetup{colorlinks=true}
+\hypersetup{colorlinks=true,
+citecolor=blue}
 \fi
 \usepackage{comment}
 
@@ -98,6 +102,19 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 % \bibitem{ref}Author:
 % \emph{Title},
 % \url{http://} (year)
+
+\bibitem{lm386}National Semiconductor:
+\emph{LM386 Low Voltage Audio Power Amplifier}
+\url{http://www.national.com/ds.cgi/LM/LM386.pdf} (2000)
+
+\bibitem{dac0832}National Semiconductor:
+\emph{DAC0830/DAC0832 8-bit $\mu$P Compatible, Double-Buffered D to A Converters}, 
+\url{http://www.national.com/ads-cgi/viewer.pl/ds/DA/DAC0830.pdf} (2002)
+
+\bibitem{lf356}National Semiconductor:
+\emph{LF155/LF156/LF256/LF257/LF355/LF356/LF357 JFET Input Operational Amplifiers},
+\url{http://www.national.com/ds.cgi/LF/LF155.pdf} (2001)
+
 \end{thebibliography}
 
 \fi % ifnotwc
