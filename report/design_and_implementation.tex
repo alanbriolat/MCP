@@ -39,8 +39,18 @@ To interface with the SBC, the DAC inputs were connected to ports A and B of the
 controller.  Though the network data contained 7-bit volume values, and the hardware needed 8-bit 
 values, we decided not to ``left-shift'' the data in hardware (wiring parallel I/O data pins 0--6 to 
 DAC data pins 1--7) to maintain flexibility of the hardware.  (In my solution the volume values are 
-left-shifted in software.)
+left-shifted in software.)  The result of this was that existing I/O ports on the SBC were used, 
+removing the need to create extra hardware for chip selection based on I/O address, and the DAC 
+operation was simple because the parallel I/O is latched (data stays on the outputs between writes).
 
+There are a few things worth noting in the circuit diagram for the audio output device (appendix 
+\ref{appendix:circuit_diagram}):
+
+\subsubsection{$V_{ref}$ Voltage Divider}
+
+In the top-right of the circuit diagram there is a voltage divider between the $V_{ref}$ input of 
+the volume DAC and $+12V$ (R1, R2 and C2).  It supplies a $??V$ potential, made very smooth by the 
+$22\mu{}F$ capacitor --- the DAC is very sensitive to noise on $V_{ref}$.
 
 \subsection{Keypad handler}
 \label{sec:design:keypad_handler}
