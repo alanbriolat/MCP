@@ -6,7 +6,7 @@
 
 % TODO: sound/music theory somewhere?
 The output device was jointly designed with my lab partner.  The most important property of any 
-output device developed was obviously the ability to output a waveform that would audibly represent 
+output device developed is obviously the ability to output a waveform that would audibly represent 
 the intended musical note (and instrument).  However, since the network data also includes volume 
 information, this needed to be taken into account.  This could be achieved in two ways:
 \begin{enumerate}
@@ -92,6 +92,7 @@ $\pm0.4V$ --- above this voltage the signal is clipped (as we found through expe
 However, the maximum output amplitude of the second DAC stage is $\sim5.1V$ ($7.1\times0.85^2$), so 
 this needed to be brought within the acceptable input range of the LM386.  This was achieved with a 
 potential divider comprising of a $150K\Omega$ resistor (R3) and a $10K\Omega$ potentiometer (P1).  
+
 The potentiometer was used to give a ``physical'' volume control to the system.  The $220\mu{}F$ 
 capacitor (C6) before the potential divider AC-couples the signal, putting it in the range 
 $\sim\pm2.55V$.  When the potentiometer is at it's maximum resistance, the signal into the LM386 is 
