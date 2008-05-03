@@ -28,6 +28,7 @@
 citecolor=blue}
 \fi
 \usepackage{comment}
+\usepackage{ulem}
 
 % Use "foo" for short verbatim
 \MakeShortVerb{\"}
@@ -46,6 +47,9 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 \lstnewenvironment{h180}{\lstset{language=h180}}{}
 % Define the global listing style
 \lstset{lineskip=-1pt, basicstyle=\small\ttfamily, frame=lines, framerule=0.2pt}
+
+% Add to-do items
+\newcommand{\todo}[1]{{\color{red}\uline{#1}}}
 
 % Lets get rid of some things if we're wordcounting
 \ifnotwc
