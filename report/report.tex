@@ -1,6 +1,9 @@
 % vim: fo=aw2tq tw=100 spell
-\documentclass[10pt]{article}
+
+% Set document style
+\documentclass[10pt,twoside,openright]{report}
 \setlength{\parskip}{0.5\baselineskip}
+\renewcommand{\chaptername}{Part}
 
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
@@ -9,26 +12,33 @@
 \newif\ifnotwc\notwctrue
 
 % Necessary packages
-%\usepackage{pslatex}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \renewcommand*\ttdefault{txtt}
-%\usepackage[scaled]{beramono}
-%\usepackage{textcomp}
-%\usepackage{pxfonts}
-%\usepackage{bookman}
 
 \usepackage{listings}
 \usepackage{shortvrb}
+
 \ifnotwc
 \usepackage[pdftex]{color,graphicx}
+
 \usepackage[pdftex]{hyperref}
-% Coloured links, not frames
 \hypersetup{colorlinks=true,
-citecolor=blue}
+    colorlinks=true,
+    citecolor=black,
+    urlcolor=black,
+    linkcolor=black,
+    pagecolor=black,
+    anchorcolor=black
+}
 \fi
+
 \usepackage{comment}
 \usepackage{ulem}
+
+% Allow EPS graphics - remember to run pdflatex with -shell-escape
+\usepackage{epstopdf}
+\DeclareGraphicsRule{.eps}{pdf}{.pdf}{`epstopdf #1}
 
 % Use "foo" for short verbatim
 \MakeShortVerb{\"}
@@ -64,6 +74,7 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 \title{Microcomputer Communications Project (MCP)}
 \author{Examination number: Y2265520}
 % TODO: Lab partner's examination number!!!
+\date{1234 words}
 
 \begin{document}
 
@@ -72,15 +83,19 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 
 % Title page
 \maketitle
-%\vfill
-\begin{center}
-1234 words
-\end{center}
+
 \newpage
+
+\pagenumbering{roman}
 % Table of Contents
-\tableofcontents
+{\setlength{\parskip}{0.2\baselineskip}
+    \tableofcontents
+}
 
 \fi % ifnotwc
+
+\newpage
+\pagenumbering{arabic}
 
 % Include all the sections
 \include{introduction}
@@ -95,10 +110,10 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 
 \appendix
 
-\section{Circuit diagram}
+\chapter{Circuit diagram}
 \begin{center}
 \label{appendix:circuit_diagram}
-\includegraphics[totalheight=0.92\textheight]{images/output-schematic.png}
+\includegraphics[width=0.95\textwidth]{images/output-schematic}
 \end{center}
 
 \pagebreak

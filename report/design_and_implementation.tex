@@ -1,7 +1,7 @@
 % vim: fo=aw2tq tw=100 spell
-\section{Design and Implementation}
+\chapter{Design and Implementation}
 
-\subsection{Audio output}
+\section{Audio output}
 \label{sec:design:audio_output}
 
 % TODO: sound/music theory somewhere?
@@ -47,7 +47,7 @@ operation was simple because the parallel I/O is latched (data stays on the outp
 There are a few things worth noting in the circuit diagram for the audio output device (appendix 
 \ref{appendix:circuit_diagram}):
 
-\subsubsection{DACs In ``Flow-Through'' Mode}
+\subsection{DACs In ``Flow-Through'' Mode}
 
 The DAC0832 used for this project is a double-buffered digital to analogue converter.  Single 
 buffering is generally useful for holding the input value in the DAC between writes.  Double 
@@ -62,13 +62,13 @@ signals related to writing and buffering to their ``enable'' value, the output o
 the digital input directly.  This means that writes to the parallel I/O have the effect of changing 
 the DAC values instantly.
 
-\subsubsection{DAC Potential Divider}
+\subsection{DAC Potential Divider}
 
 In the top-right of the circuit diagram there is a potential divider circuit between the $V_{ref}$ 
 input of the volume DAC and $+12V$ (R1, R2 and C2).  It supplies a $\sim7.1V$ potential, made very 
 smooth by the $22\mu{}F$ capacitor --- the DAC is very sensitive to noise on $V_{ref}$.
 
-\subsubsection{Feedback Capacitors}
+\subsection{Feedback Capacitors}
 
 The capacitors C1 and C5 --- between the output and inverting input of both operational amplifiers) 
 --- are to remove ``ringing'' and ``overshoot'' from the output signals (as recommended by the 
@@ -78,14 +78,14 @@ complete and the maximum sample rate was known, the value of C5 was increased to
 the output signal and make it sound less ``square'' --- a problem present due to the quick value 
 changes compared to the time between changes.
 
-\subsubsection{Audio Amplifier}
+\subsection{Audio Amplifier}
 
 The audio amplifier (IC5) is set up in a similar way to that described in the LM386 audio amplifier 
 datasheet\cite{lm386} (diagram titled ``Amplifier with Gain = 20, Minimum Parts'') --- we were not 
 too interested in voltage gain, our reason for using an amplifier was to supply more current so that 
 driving a speaker did not result in clipping of the waveform.
 
-\subsubsection{Pre-Amplifier Potential Divider}
+\subsection{Pre-Amplifier Potential Divider}
 
 The datasheet for the LM386\cite{lm386} states that the input voltage for the audio amplifier is 
 $\pm0.4V$ --- above this voltage the signal is clipped (as we found through experimentation).  
@@ -102,7 +102,7 @@ $\pm0.32V$).  However, this is of little consequence since the maximum output ca
 amplifier to clip.
 
 
-\subsection{Keypad handler}
+\section{Keypad handler}
 \label{sec:design:keypad_handler}
 
 The keypad is an awkward device for trying to get a single value from --- it interrupts continuously 
@@ -124,7 +124,7 @@ time for the key to be released.  I found this method to be less than ideal, sin
 too long it can result in the system seeming unresponsive, and if too short then repeated interrupts 
 can occur.  I felt it was better to maintain a direct response between action and reaction.
 
-\subsection{Note lookup tables}
+\section{Note lookup tables}
 \label{notelookuptables}
 
 Lookup tables are needed to contain the PRT value, divisor and note name (including octave) for 

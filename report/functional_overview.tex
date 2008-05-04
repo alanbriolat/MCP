@@ -1,5 +1,5 @@
 % vim: fo=aw2tq tw=100 spell
-\section{Functional Overview}
+\chapter{Functional Overview}
 
 \begin{nowordcount}
 \begin{figure}[htbp]
@@ -49,7 +49,7 @@ ID & Instrument \\
 \end{table}
 \end{nowordcount}
 
-\subsection{Network}
+\section{Network}
 
 % FIXME: contradiction with actual design?
 The network handler deals with collecting data from the incoming bytes on the serial interface 
@@ -63,7 +63,7 @@ displayed on the LCD.  The MIDI note is used as the index in a lookup table for 
 and wave table divisor (see \ref{wavetables}), and also in another lookup table for a 4-character 
 representation of the note which is shown on the LCD.
 
-\subsection{Wave tables}
+\section{Wave tables}
 \label{wavetables}
 % TODO: double check the maths!
 

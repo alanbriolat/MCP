@@ -1,3 +1,3 @@
 all: report.tex
-	pdflatex $<
-	pdflatex $<
+	pdflatex -shell-escape $<
+	pdflatex -shell-escape $<
