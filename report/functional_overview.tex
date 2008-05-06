@@ -73,8 +73,8 @@ details of the lookup tables.
 \section{Wavetable Playback}
 \label{sec:overview:playback}
 
-Wavetable playback is controlled by the PRT and divisor settings --- how these affect the frequency 
-of the note is explained in Section~\ref{sec:design:wavetables}.  Every time the playback routine is 
+Wavetable playback is controlled by the PRT and divisor settings --- how these affect the note being 
+played is explained in Section~\ref{sec:design:wavetables}.  Every time the playback routine is 
 called, the next sample from the wavetable for the current instrument is sent to the output device.  
 The PRT reload value controls how often the playback routine is called.  The ``divisor'' controls 
 the step between samples --- for example, 1 means every sample, 3 means every third sample.  The 
@@ -85,7 +85,7 @@ anywhere.
 \label{sec:overview:keypad}
 
 Since the keypad has 16 possible values, when a button is pressed on the keypad, the value is used 
-to set the channel and instrument selection to that value.  \todo{Expand this.}
+to set the channel and instrument selection to that value.  \todo{Expand this?}
 
 \section{Terminal Interface}
 \label{sec:overview:terminal}
@@ -93,7 +93,8 @@ to set the channel and instrument selection to that value.  \todo{Expand this.}
 The SBC is connected to a PC via a serial connection.  This allows the user to interact with the 
 software over this connection using terminal software, such as Seyon.  The user interface provided 
 over the serial terminal is purely additional functionality --- the essentials of playback and 
-channel selection can be used without this interface.
+channel selection can be used without this interface.  The keyboard handler decides what should be 
+done based on the mode and the key pressed.
 
 \begin{figure}
 \centering
@@ -124,40 +125,31 @@ rows of normal characters on a standard keyboard I decided to map the current oc
 above.  The ``$+$'' and ``$-$'' keys can be used to change the current octave.  Pressing ``Ctrl+D'' 
 exits piano mode, returning to network mode.
 
+When a note key is pressed, the correct MIDI note is found (via lookup tables and the octave offset) 
+and passed to the note handler (Section~\ref{sec:overview:note-handler}).
+
 \begin{figure}
 \centering
 \includegraphics[width=0.9\textwidth]{images/piano-mode}
 \caption{``Piano Mode'' Keyboard Layout}\label{fig:piano-mode}
 \end{figure}
 
-\section{Wave tables}
-\label{wavetables}
+\section{State}
+\label{sec:overview:state}
 
-\todo{Double check maths; move this to ``Design and Implementation''!}
+There are 5 main elements to the state of the system:
 
-In my design, all frequencies of the instruments are synthesised from the same wave table sample, 
-therefore a way is needed to perform this frequency conversion.  A sample has two important 
-interdependent properties --- the sample rate and the frequency.  When changing either of these 
-properties, the following property holds:
-
-\[\frac{F_{target}}{F_{source}} = \frac{R_{target}}{R_{source}}\]
-
-In other words, if a particular note is recorded at a particular sample rate, then the difference of 
-the frequency when played is proportional to the sample rate it is played at.  In this case, we are 
-aiming to play a particular frequency, so the required sample rate can be calculated with:
-
-\[R_{target} = \frac{F_{target} \times R_{source}}{F_{source}}\]
-
-Unfortunately, at higher playback frequencies the necessary sample rate will be impractically high, 
-so an additional way of changing the frequency is needed.  If for example only every other sample 
-from the wave table is played, without changing the sample rate, this will double the frequency of 
-the note being played, since the entire sample is being played twice as fast.  More generally, if a 
-divisor $D$ is introduced, then $F_{target} = F_{source} \times D$.
-
-To combine the two methods, $F_{target}$ can be replaced with $F_{target} \times D$.  With a little 
-re-arrangement, the following equation can be obtained:
-
-\[R_{target} \times D = \frac{F_{target} \times R_{source}}{F_{source}}\]
-
-See \ref{notelookuptables} for how this conversion is implemented to generate the MIDI note lookup 
-tables.
+\begin{description}
+\item[Wavetable sample rate:] The rate at which samples are read from the instrument wavetable and 
+output.  This takes the form of the PRT reload value, and is one of two factors affecting the 
+generated note frequency.
+\item[Wavetable divisor:] The step size when reading from the instrument wavetable.  This is the 
+second factor affecting the note frequency.  How these affect the frequency is explained in 
+Section~\ref{sec:design:wavetables}.
+\item[Channel:] The current channel being played.  This affects which data is used from the network 
+stream, and the channel name being displayed on the LCD text display.
+\item[Instrument:] The current instrument being used.  This affects which wavetable sample is being 
+used by the playback routine.
+\item[Mode:] The current system mode --- ``network'' or ``piano''.  This affects the actions of key 
+presses on the terminal, and also whether or not network data is ignored.
+\end{description}

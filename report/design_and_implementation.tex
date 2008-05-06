@@ -189,3 +189,36 @@ Usage & PRT low & PRT high & Divisor & 00h \\
 
 The script also produces a second table which contains a 4-character representation of the note 
 created from the octave number and note name.
+
+
+\section{Wave tables}
+\label{wavetables}
+
+\todo{Double check maths; move this to ``Design and Implementation''!}
+
+In my design, all frequencies of the instruments are synthesised from the same wave table sample, 
+therefore a way is needed to perform this frequency conversion.  A sample has two important 
+interdependent properties --- the sample rate and the frequency.  When changing either of these 
+properties, the following property holds:
+
+\[\frac{F_{target}}{F_{source}} = \frac{R_{target}}{R_{source}}\]
+
+In other words, if a particular note is recorded at a particular sample rate, then the difference of 
+the frequency when played is proportional to the sample rate it is played at.  In this case, we are 
+aiming to play a particular frequency, so the required sample rate can be calculated with:
+
+\[R_{target} = \frac{F_{target} \times R_{source}}{F_{source}}\]
+
+Unfortunately, at higher playback frequencies the necessary sample rate will be impractically high, 
+so an additional way of changing the frequency is needed.  If for example only every other sample 
+from the wave table is played, without changing the sample rate, this will double the frequency of 
+the note being played, since the entire sample is being played twice as fast.  More generally, if a 
+divisor $D$ is introduced, then $F_{target} = F_{source} \times D$.
+
+To combine the two methods, $F_{target}$ can be replaced with $F_{target} \times D$.  With a little 
+re-arrangement, the following equation can be obtained:
+
+\[R_{target} \times D = \frac{F_{target} \times R_{source}}{F_{source}}\]
+
+See \ref{notelookuptables} for how this conversion is implemented to generate the MIDI note lookup 
+tables.
