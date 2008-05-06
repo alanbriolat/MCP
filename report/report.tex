@@ -11,9 +11,6 @@
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
 
-% Flag for whether or not this is the wordcount version
-\newif\ifnotwc\notwctrue
-
 % Necessary packages
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -22,7 +19,6 @@
 \usepackage{listings}
 \usepackage{shortvrb}
 
-\ifnotwc
 \usepackage[pdftex]{color,graphicx}
 
 \usepackage[pdftex]{hyperref}
@@ -34,9 +30,7 @@
     pagecolor=black,
     anchorcolor=black
 }
-\fi
 
-\usepackage{comment}
 \usepackage[normalem]{ulem}
 
 % Allow EPS graphics - remember to run pdflatex with -shell-escape
@@ -64,13 +58,8 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 % Add to-do items
 \newcommand{\todo}[1]{{\color{red}\uline{#1}}}
 
-% Lets get rid of some things if we're wordcounting
-\ifnotwc
-\includecomment{nowordcount}
-\else
-\usepackage{xcomment}
-\excludecomment{nowordcount}
-\fi
+% A null environment for flagging stuff for ignoring by detex
+\newenvironment{nowordcount}{}{}
 
 
 % Document info
@@ -81,24 +70,21 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 
 \begin{document}
 
-% Keep the front matter out of the wordcount
-\ifnotwc
-
 % Title page
 \maketitle
 
 \newpage
 
+\begin{nowordcount}
 \pagenumbering{roman}
 % Table of Contents
 {\setlength{\parskip}{0.2\baselineskip}
     \tableofcontents
 }
 
-\fi % ifnotwc
-
 \newpage
 \pagenumbering{arabic}
+\end{nowordcount}
 
 % Include all the sections
 \include{introduction}
@@ -108,10 +94,9 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 \include{technical_specification}
 \include{further_work}
 
-% Don't want the end matter getting in the way of my word count!!!
-\ifnotwc
-
 \appendix
+
+\begin{nowordcount}
 
 \chapter{Circuit diagram}
 \begin{center}
@@ -136,9 +121,8 @@ otimr,outd,daa,ccf,scf,di,ei,halt,im,nop,slp},
 \bibitem{lf356}National Semiconductor:
 \emph{LF155/LF156/LF256/LF257/LF355/LF356/LF357 JFET Input Operational Amplifiers},
 \url{http://www.national.com/ds.cgi/LF/LF155.pdf} (2001)
-
 \end{thebibliography}
 
-\fi % ifnotwc
+\end{nowordcount}
 
 \end{document}
