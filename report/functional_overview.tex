@@ -5,7 +5,7 @@
 \begin{figure}[htbp]
 \centering
 \includegraphics[totalheight=0.55\textheight,angle=90]{images/overview}
-\caption{System overview}\label{fig:systemoverview}
+\caption{System Overview}\label{fig:systemoverview}
 \end{figure}
 \end{nowordcount}
 
@@ -13,19 +13,21 @@ The diagram in Figure \ref{fig:systemoverview} shows the conceptual architecture
 basic idea is that various inputs are processed and in some way modify the state of the system, and 
 this state in turn affects the operation of the continuously-running wave table playback.
 
-The most important element of the system is the real-time conversion of network data to audio.  The 
-network interface is a serial connection with a 19200bps baud rate.  Data arrives at a rate of one 
-34-byte packet every 34ms.  The data format is sixteen pairs of bytes, each pair containing a MIDI 
-note value and a volume level (both in the range 0--127), with each pair representing a channel 
-between 0 and 15 (in order), and the packet is terminated with a null byte (00h) and a carriage 
-return (0Dh).  The mapping of channel identifiers to instruments is shown in Table 
-\ref{tab:channelids}.  For the ``Percussion'' channel, the volume level represents the particular 
-percussion instrument to play rather than the volume at which to play it.
+\section{Network Interface}
+\label{sec:overview:network}
+
+The network interface is a serial connection which receives a data stream at a rate of one 34-byte 
+packet every $34ms$.  The data format is sixteen pairs of bytes, each pair containing a MIDI note 
+value and a volume level (both in the range 0--127), with each pair representing a channel between 0 
+and 15 (in order).  The packet is terminated with a null byte (00h) and a carriage return (0Dh).  
+The mapping of channel identifiers to instruments is shown in Table \ref{tab:channelids}.  For the 
+``Percussion'' channel, the volume level represents the particular percussion instrument to play 
+rather than the volume at which to play it.
 
 \begin{nowordcount}
 \begin{table}[htbp]
 \centering
-\begin{tabular}[bp]{c | l}
+\begin{tabular}{c | l}
 ID & Instrument \\
 \hline\hline
 0 & Bass Guitar \\
@@ -49,23 +51,46 @@ ID & Instrument \\
 \end{table}
 \end{nowordcount}
 
-\section{Network}
+The network handler collects data from the incoming byte stream.  The bytes are counted, and the 
+currently selected channel is used to decide which note/volume pair to store (see 
+Section~\ref{sec:design:network-handler} for rationale on this design).  When the end of a packet is 
+detected, the byte count is checked and the data discarded if the packet was incomplete.  The packet 
+is also discarded if the system is not in ``network mode'' (see Section~\ref{sec:overview:state}).
+If there is no reason to discard the packet, the data is used to set the state of the system.  The 
+volume is converted to an 8-bit value (left-shifted) and output to the hardware, and also used to 
+set the appropriate part of the LCD text display.  The note handler is run with the note value.
 
-% FIXME: contradiction with actual design?
-The network handler deals with collecting data from the incoming bytes on the serial interface 
-connected to the network and running the packet handler when the end of a packet is detected.  The 
-carriage return is interpreted as the end of the packet, and the incoming bytes are counted and 
-checked to detect and ignore incomplete packets.
+\section{Note Handler}
+\label{sec:overview:note-handler}
 
-When the end of a complete packet is detected, the packet handler is run.  The volume is converted 
-from a 7-bit to 8-bit value and sent to the volume output, and also converted to a hexadecimal 
-string representation and displayed on the LCD.  The MIDI note is used as the index in a lookup 
-table for the PRT reload value and wave table divisor (see \ref{wavetables}), and also in another 
-lookup table for a 4-character representation of the note which is shown on the LCD.
+The note handler ``receives'' a MIDI note value, and uses it to find the appropriate state 
+information in a lookup tables.  Firstly, a playback lookup table is used to find the PRT value and 
+divisor, which are written to the PRT reload register and divisor register used by the playback loop 
+respectively.  Secondly, a display lookup table is used to find a 4-character representation of the 
+note, which is written to the LCD text display.  See Section~\ref{sec:design:lookup-tables} for 
+details of the lookup tables.
+
+\section{Wavetable Playback}
+\label{sec:overview:playback}
+
+Wavetable playback is controlled by the PRT and divisor settings --- how these affect the frequency 
+of the note is explained in Section~\ref{sec:design:wavetables}.  Every time the playback routine is 
+called, the next sample from the wavetable for the current instrument is sent to the output device.  
+The PRT reload value controls how often the playback routine is called.  The ``divisor'' controls 
+the step between samples --- for example, 1 means every sample, 3 means every third sample.  The 
+wavetable playback is affected only by the state of the system, it is not directly called from 
+anywhere.
+
+\section{Keypad Handler}
+\label{sec:overview:keypad}
+
+Since the keypad has 16 possible values, when a button is pressed on the keypad, the value is used 
+to set the channel and instrument selection to that value.  \todo{Expand this.}
 
 \section{Wave tables}
 \label{wavetables}
-% TODO: double check the maths!
+
+\todo{Double check maths; move this to ``Design and Implementation''!}
 
 In my design, all frequencies of the instruments are synthesised from the same wave table sample, 
 therefore a way is needed to perform this frequency conversion.  A sample has two important 
