@@ -56,9 +56,10 @@ currently selected channel is used to decide which note/volume pair to store (se
 Section~\ref{sec:design:network-handler} for rationale on this design).  When the end of a packet is 
 detected, the byte count is checked and the data discarded if the packet was incomplete.  The packet 
 is also discarded if the system is not in ``network mode'' (see Section~\ref{sec:overview:state}).
-If there is no reason to discard the packet, the data is used to set the state of the system.  The 
-volume is converted to an 8-bit value (left-shifted) and output to the hardware, and also used to 
-set the appropriate part of the LCD text display.  The note handler is run with the note value.
+If there is no reason to discard the packet, the data is used to set the playback state of the 
+system.  The volume is converted to an 8-bit value (left-shifted) and output to the hardware, and 
+also used to set the appropriate part of the LCD text display.  The note handler is run with the 
+note value.
 
 \section{Note Handler}
 \label{sec:overview:note-handler}
