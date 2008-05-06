@@ -96,11 +96,10 @@ potential divider comprising of a $150K\Omega$ resistor (R3) and a $10K\Omega$ p
 The potentiometer was used to give a ``physical'' volume control to the system.  The $220\mu{}F$ 
 capacitor (C6) before the potential divider AC-couples the signal, putting it in the range 
 $\sim\pm2.55V$.  When the potentiometer is at it's maximum resistance, the signal into the LM386 is 
-in the range $\sim\pm0.16V$.  This is actually lower than necessary, because when I calculated the 
-resistor values I failed to take into account the AC coupling (I was aiming for a maximum voltage of 
-$\pm0.32V$).  However, this is of little consequence since the maximum output can still cause the 
-amplifier to clip.
-
+in the range $\sim\pm0.16V$, well within the device limits.  (This is actually lower than intended, 
+since when the resistor values were originally calculated we failed to take into account the AC 
+coupling halving the displacement from zero.  It is still possible to drive the speaker to clipping 
+at this range however, so it is of little consequence.)
 
 \section{Keypad handler}
 \label{sec:design:keypad_handler}
@@ -143,9 +142,9 @@ method.
 
 % TODO: expand on the result sorting
 The Python script\footnote{"tools/pitchtable.py" in the submitted source code} I wrote to generate 
-the lookup tables\footnote{"note\_lookup.s"} is based on the concept outlined in \ref{wavetables} 
-for creating new frequencies from a single sample by modifying the sample rate and divisor.  PRT and 
-divisor values are calculated for the frequency information in the pitch 
+the lookup tables\footnote{"note\_lookup.s"} is based on the concept outlined in Section 
+\ref{wavetables} for creating new frequencies from a single sample by modifying the sample rate and 
+divisor.  PRT and divisor values are calculated for the frequency information in the pitch 
 table\footnote{"tools/pitchtable.csv" - octave, MIDI note number, note name, frequency}.
 
 The first step is calculating the PRT value for every divisor, $D$ from 1 to 255, first by 
@@ -183,7 +182,7 @@ margins with bad sample rates.
 The format of the resulting lookup table is:
 \begin{nowordcount}
 \begin{center}
-\begin{tabular}{c | c | c | c | c}
+\begin{tabular}{c || c | c | c | c}
 Byte & 0 & 1 & 2 & 3 \\
 \hline
 Usage & PRT low & PRT high & Divisor & 00h \\

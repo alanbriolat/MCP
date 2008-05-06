@@ -4,7 +4,7 @@
 \begin{nowordcount}
 \begin{figure}[htbp]
 \centering
-\includegraphics[totalheight=0.55\textheight,angle=90]{images/overview.png}
+\includegraphics[totalheight=0.55\textheight,angle=90]{images/overview}
 \caption{System overview}\label{fig:systemoverview}
 \end{figure}
 \end{nowordcount}
@@ -25,9 +25,9 @@ percussion instrument to play rather than the volume at which to play it.
 \begin{nowordcount}
 \begin{table}[htbp]
 \centering
-\begin{tabular}[bp]{c l}
+\begin{tabular}[bp]{c | l}
 ID & Instrument \\
-\hline
+\hline\hline
 0 & Bass Guitar \\
 1 & Cello \\
 2 & Church Organ \\
@@ -58,10 +58,10 @@ carriage return is interpreted as the end of the packet, and the incoming bytes 
 checked to detect and ignore incomplete packets.
 
 When the end of a complete packet is detected, the packet handler is run.  The volume is converted 
-from a 7-bit to 8-bit value and sent to the volume output, and also converted to hexadecimal and 
-displayed on the LCD.  The MIDI note is used as the index in a lookup table for the PRT reload value 
-and wave table divisor (see \ref{wavetables}), and also in another lookup table for a 4-character 
-representation of the note which is shown on the LCD.
+from a 7-bit to 8-bit value and sent to the volume output, and also converted to a hexadecimal 
+string representation and displayed on the LCD.  The MIDI note is used as the index in a lookup 
+table for the PRT reload value and wave table divisor (see \ref{wavetables}), and also in another 
+lookup table for a 4-character representation of the note which is shown on the LCD.
 
 \section{Wave tables}
 \label{wavetables}
@@ -69,7 +69,7 @@ representation of the note which is shown on the LCD.
 
 In my design, all frequencies of the instruments are synthesised from the same wave table sample, 
 therefore a way is needed to perform this frequency conversion.  A sample has two important 
-interdependant properties --- the sample rate and the frequency.  When changing either of these 
+interdependent properties --- the sample rate and the frequency.  When changing either of these 
 properties, the following property holds:
 
 \[\frac{F_{target}}{F_{source}} = \frac{R_{target}}{R_{source}}\]

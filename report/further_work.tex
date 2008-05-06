@@ -11,7 +11,7 @@ new lookup table format was
 
 \begin{nowordcount}
 \begin{center}
-\begin{tabular}{r | c | c | c | c | c | c | c | c}
+\begin{tabular}{r || c | c | c | c | c | c | c | c}
 Byte & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
 \hline
 Usage & PRT low & PRT high & Divisor & \multicolumn{4}{c |}{LCD info.} & 00h \\
@@ -65,7 +65,8 @@ abandoned due to time constraints.  The idea was that instead of the current sof
 output of samples from a wave table, I would create hardware that could be programmed with an 
 instrument number and note and would play the correct sound at the correct frequency.   This would 
 leave the CPU with only network data and visual output to handle, but would also allow the extra CPU 
-time to bu used for other functions, such as an advanced visualisation on an LCD matrix display.
+time to be used for other functions, such as an advanced visualisation on an liquid crystal matrix 
+display.
 
 My rudimentary ideas for this included the following:
 
