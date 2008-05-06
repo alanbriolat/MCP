@@ -87,6 +87,49 @@ anywhere.
 Since the keypad has 16 possible values, when a button is pressed on the keypad, the value is used 
 to set the channel and instrument selection to that value.  \todo{Expand this.}
 
+\section{Terminal Interface}
+\label{sec:overview:terminal}
+
+The SBC is connected to a PC via a serial connection.  This allows the user to interact with the 
+software over this connection using terminal software, such as Seyon.  The user interface provided 
+over the serial terminal is purely additional functionality --- the essentials of playback and 
+channel selection can be used without this interface.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.9\textwidth]{images/terminal-prompt}
+\caption{Serial Terminal Prompt}\label{fig:terminal-prompt}
+\end{figure}
+
+\subsection{``Network Mode''}
+
+In the default mode, there are three possible actions the user can perform 
+(Figure~\ref{fig:terminal-prompt}):
+
+\begin{description}
+\item[Change instrument:] Change the current instrument without changing the channel being read.  
+This is useful for demonstrating all of the instruments when not all channels have activity.
+\item[Change channel:] Change the current channel without changing the instrument.  Useful for 
+testing all of the channels when only one instrument sample has been loaded, also makes sense for 
+this to be possible given the availability of the first action.
+\item[Piano mode:] Enter piano mode, where keyboard input is mapped to changing the note.
+\end{description}
+
+\subsection{``Piano Mode''}
+
+In piano mode, the currently selected octave combined with pressing a key determines the note to 
+play (explained further in Section~\ref{sec:design:piano-mode}).  Figure~\ref{fig:piano-mode} shows 
+how the keys are mapped --- the layout is based on the note layout on a piano.  Since there are four 
+rows of normal characters on a standard keyboard I decided to map the current octave and the octave 
+above.  The ``$+$'' and ``$-$'' keys can be used to change the current octave.  Pressing ``Ctrl+D'' 
+exits piano mode, returning to network mode.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.9\textwidth]{images/piano-mode}
+\caption{``Piano Mode'' Keyboard Layout}\label{fig:piano-mode}
+\end{figure}
+
 \section{Wave tables}
 \label{wavetables}
 
