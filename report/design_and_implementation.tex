@@ -71,10 +71,10 @@ smooth by the 22$\mu$F capacitor --- the DAC is very sensitive to noise on $V_{r
 Testing the hardware (Section~\ref{sec:testing:hardware}) revealed ``overshoot'' in the output 
 signal.  This was solved by adding capacitors C1 and C5, between the output and inverting input of 
 each op-amp, as recommended by the DAC0832 datasheet\cite{dac0832}.  Initially both capacitors were 
-$68pF$, sufficient to remove any noticeable overshoot from the signal.  However, once the hardware 
-and software solutions were complete and the maximum sample rate was known, the value of C5 was 
-increased to $10nF$ to smooth the output signal and make it sound less ``square'' --- a problem 
-caused by the value changes being fast compared to the time between changes.
+68pF, sufficient to remove any noticeable overshoot from the signal.  However, once the hardware and 
+software solutions were complete and the maximum sample rate was known, the value of C5 was 
+increased to 10nF to smooth the output signal and make it sound less ``square'' --- a problem caused 
+by the value changes being fast compared to the time between changes.
 
 \subsection{Audio Amplifier}
 
@@ -175,11 +175,11 @@ re-arrangement, the following equation can be obtained:
 See Section \ref{sec:design:lookup-tables} for how this conversion is implemented to generate the 
 MIDI note lookup tables.
 
-The wavetables consist of 256 8-bit samples (points on the wave), and are aligned to 256-byte 
-boundaries.  This allows for an efficient playback routine --- the top 8 bits of the sample address 
-locate the wavetable, and the low 8 bits are the position within it.  This means that the low byte 
-can be incremented and allowed to overflow, ``automatically'' achieving the wrap-around effect --- 
-the position being read flows off the end of the wavetable back onto the beginning.
+The wavetables consist of 256 8-bit samples (points on the wave) per instrument, and are aligned to 
+256-byte boundaries.  This allows for an efficient playback routine --- the top 8 bits of the sample 
+address locate the wavetable, and the low 8 bits are the position within it.  This means that the 
+low byte can be incremented and allowed to overflow, ``automatically'' achieving the wrap-around 
+effect --- the position being read flows off the end of the wavetable back onto the beginning.
 
 
 \section{Note Lookup Tables}
