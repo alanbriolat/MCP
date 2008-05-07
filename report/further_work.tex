@@ -62,7 +62,7 @@ call lcd_print
 
 During the late stages of the project I started development of an alternative design, which I 
 abandoned due to time constraints.  The idea was that instead of the current software processing and 
-output of samples from a wave table, I would create hardware that could be programmed with an 
+output of samples from a wavetable, I would create hardware that could be programmed with an 
 instrument number and note and would play the correct sound at the correct frequency.   This would 
 leave the CPU with only network data and visual output to handle, but would also allow the extra CPU 
 time to be used for other functions, such as an advanced visualisation on an liquid crystal matrix 
@@ -71,10 +71,10 @@ display.
 My rudimentary ideas for this included the following:
 
 \begin{itemize}
-\item A ROM chip containing all of the wave table samples (probably at 256 bytes per instrument).
-\item An 8-bit counter connected to the lowest 8 bits of the wave table ROM address for stepping 
+\item A ROM chip containing all of the wavetable samples (probably at 256 bytes per instrument).
+\item An 8-bit counter connected to the lowest 8 bits of the wavetable ROM address for stepping 
 through the instrument sample.
-\item A 4-bit register connected to the next 4 bits of the wave table address for selecting the 
+\item A 4-bit register connected to the next 4 bits of the wavetable address for selecting the 
 instrument.
 \item A 16-bit programmable reload timer running at a clock divider of 2, for controlling the 
 playback frequency --- the output of this is the clock for the 8-bit address counter.  (Plus two 
