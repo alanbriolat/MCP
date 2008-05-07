@@ -1,8 +1,8 @@
 % vim: fo=aw2tq tw=100 spell
 \chapter{Design and Implementation}
 
-\section{Audio output}
-\label{sec:design:audio_output}
+\section{Audio Output Hardware}
+\label{sec:design:hardware}
 
 % TODO: sound/music theory somewhere?
 The output device was jointly designed with my lab partner.  The most important property of any 
@@ -69,14 +69,15 @@ input of the volume DAC and $+12V$ (R1, R2 and C2).  It supplies a $\sim7.1V$ po
 smooth by the $22\mu{}F$ capacitor --- the DAC is very sensitive to noise on $V_{ref}$.
 
 \subsection{Feedback Capacitors}
+\label{sec:design:hardware:feedback}
 
-The capacitors C1 and C5 --- between the output and inverting input of both operational amplifiers) 
---- are to remove ``ringing'' and ``overshoot'' from the output signals (as recommended by the 
-DAC0832 datasheet\cite{dac0832}).  Initially both capacitors were $68pF$, sufficient to remove any 
-noticeable overshoot from the signal.  However, once the hardware and software solutions were 
-complete and the maximum sample rate was known, the value of C5 was increased to $10nF$ to smooth 
-the output signal and make it sound less ``square'' --- a problem present due to the quick value 
-changes compared to the time between changes.
+Testing the hardware (Section~\ref{sec:testing:hardware}) revealed ``overshoot'' in the output 
+signal.  This was solved by adding capacitors C1 and C5, between the output and inverting input of 
+each op-amp, as recommended by the DAC0832 datasheet\cite{dac0832}.  Initially both capacitors were 
+$68pF$, sufficient to remove any noticeable overshoot from the signal.  However, once the hardware 
+and software solutions were complete and the maximum sample rate was known, the value of C5 was 
+increased to $10nF$ to smooth the output signal and make it sound less ``square'' --- a problem 
+caused by the value changes being fast compared to the time between changes.
 
 \subsection{Audio Amplifier}
 

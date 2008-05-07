@@ -1,2 +1,36 @@
 % vim: fo=aw2tq tw=100 spell
 \chapter{Testing and Evaluation}
+\label{sec:testing}
+
+This section is a commentary on the testing procedures used throughout the project.  My general 
+approach was bottom-up iterative development and testing---starting with the most basic components 
+that stand on their own, testing them thoroughly, and building the next layer of complexity on top 
+of them.  Every component that is tested well and known to be working provides a good stable 
+platform for testing other components against.
+
+\section{Output Hardware}
+\label{sec:testing:hardware}
+
+Using the principle of testing components with already working components, it made sense that the 
+first part that needed to be tested was the audio hardware.
+
+After assembling the audio output hardware as designed (and illustrated in 
+Appendix~\ref{appendix:output-schematic}), but before connecting the data lines to the parallel I/O 
+ports, the behaviour was tested manually by setting input values with 8-bit DIP switches, and 
+measuring voltages with an oscilloscope.
+
+First, both inputs were set to the maximum values, and the voltage measured from the output of the 
+second op-amp (IC4, pin 6).  This is the maximum voltage.  Starting from the MSB, each bit of the 
+input to the volume DAC was switched from ``on'' to ``off'', and the voltage observed at each point.  
+The voltage was halved for every bit turned off, as expected.  This showed that the first DAC was 
+operating correctly, and that the ``pre-scaling'' effect also worked correctly.
+
+The experiment was repeated, but this time changing only the value of the waveform DAC.  The same 
+results were observed, as expected.  This means this DAC was also working correctly.
+
+Next, an 8-bit binary counter was assembled and run as the input to each DAC in turn to test the 
+response to changing inputs.  The observed waveform on the oscilloscope revealed overshoot in the 
+output when the value changed.  Fixing this issue is described in 
+Section~\ref{sec:design:hardware:feedback}.  Other than this, the device performed as expected.
+
+\todo{Not done yet: testing the audio amp}
