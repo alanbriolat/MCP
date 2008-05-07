@@ -120,14 +120,15 @@ this to be possible given the availability of the first action.
 \subsection{``Piano Mode''}
 
 In piano mode, the currently selected octave combined with pressing a key determines the note to 
-play (explained further in Section~\ref{sec:design:piano-mode}).  Figure~\ref{fig:piano-mode} shows 
-how the keys are mapped --- the layout is based on the note layout on a piano.  Since there are four 
-rows of normal characters on a standard keyboard I decided to map the current octave and the octave 
-above.  The ``$+$'' and ``$-$'' keys can be used to change the current octave.  Pressing ``Ctrl+D'' 
-exits piano mode, returning to network mode.
+play.  Figure~\ref{fig:piano-mode} shows how the keys are mapped --- the layout is based on the note 
+layout on a piano.  Since there are four rows of normal characters on a standard keyboard I decided 
+to map the current octave and the octave above.  The ``$+$'' and ``$-$'' keys can be used to change 
+the current octave.  Pressing ``Ctrl+D'' exits piano mode, returning to network mode.
 
-When a note key is pressed, the correct MIDI note is found (via lookup tables and the octave offset) 
-and passed to the note handler (Section~\ref{sec:overview:note-handler}).
+The octave is actually stored as a MIDI note value giving the note ``C'' in the octave.  When a key 
+is pressed, a lookup table is used to find the offset for the key, and this offset is added to the 
+octave base value to give the MIDI note for the key that was pressed.  This note is then passed to 
+the note handler.
 
 \begin{figure}[htb]
 \centering
