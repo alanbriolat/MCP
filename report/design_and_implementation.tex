@@ -4,11 +4,8 @@
 \section{Audio Output Hardware}
 \label{sec:design:hardware}
 
-% TODO: sound/music theory somewhere?
-The most important property of any output device developed is obviously the ability to output a 
-waveform that would audibly represent the intended musical note (and instrument).  However, since 
-the network data also includes volume information, this needed to be taken into account.  This could 
-be achieved in two ways:
+The first thing that had to be decided before designing the output hardware was how the volume 
+provided by the network data was going to be handled.  The possibilities can be reduced to:
 \begin{enumerate}
 \item Implementing a volume scaling function in software
 \item Scaling the volume with more programmable hardware
@@ -44,8 +41,8 @@ left-shifted in software.)  The result of this was that existing I/O ports on th
 removing the need to create extra hardware for chip selection based on I/O address, and the DAC 
 operation was simple because the parallel I/O is latched (data stays on the outputs between writes).
 
-There are a few things worth noting in the circuit diagram for the audio output device (appendix 
-\ref{appendix:circuit-diagram}):
+There are a few things worth noting in the circuit diagram for the audio output device 
+(Appendix~\ref{appendix:circuit-diagram}):
 
 \subsection{DACs In ``Flow-Through'' Mode}
 
@@ -65,8 +62,8 @@ the DAC values instantly.
 \subsection{DAC Potential Divider}
 
 In the top-right of the circuit diagram there is a potential divider circuit between the $V_{ref}$ 
-input of the volume DAC and $+12V$ (R1, R2 and C2).  It supplies a $\sim7.1V$ potential, made very 
-smooth by the $22\mu{}F$ capacitor --- the DAC is very sensitive to noise on $V_{ref}$.
+input of the volume DAC and +12V (R1, R2 and C2).  It supplies a $\sim$7.1V potential, made very 
+smooth by the 22$\mu$F capacitor --- the DAC is very sensitive to noise on $V_{ref}$.
 
 \subsection{Feedback Capacitors}
 \label{sec:design:hardware:feedback}
@@ -89,15 +86,15 @@ driving a speaker did not result in clipping of the waveform.
 \subsection{Pre-Amplifier Potential Divider}
 
 The datasheet for the LM386\cite{lm386} states that the input voltage for the audio amplifier is 
-$\pm0.4V$ --- above this voltage the signal is clipped (as we found through experimentation).  
-However, the maximum output amplitude of the second DAC stage is $\sim5.1V$ ($7.1\times0.85^2$), so 
+$\pm$0.4V --- above this voltage the signal is clipped (as we found through experimentation).  
+However, the maximum output amplitude of the second DAC stage is $\sim$5.1V ($7.1\times0.85^2$), so 
 this needed to be brought within the acceptable input range of the LM386.  This was achieved with a 
-potential divider comprising of a $150K\Omega$ resistor (R3) and a $10K\Omega$ potentiometer (P1).  
+potential divider comprising of a 150K$\Omega$ resistor (R3) and a 10K$\Omega$ potentiometer (P1).  
 
-The potentiometer was used to give a ``physical'' volume control to the system.  The $220\mu{}F$ 
+The potentiometer was used to give a ``physical'' volume control to the system.  The 220$\mu$F 
 capacitor (C6) before the potential divider AC-couples the signal, putting it in the range 
-$\sim\pm2.55V$.  When the potentiometer is at it's maximum resistance, the signal into the LM386 is 
-in the range $\sim\pm0.16V$, well within the device limits.  (This is actually lower than intended, 
+$\sim\pm$2.55V.  When the potentiometer is at it's maximum resistance, the signal into the LM386 is 
+in the range $\sim\pm$0.16V, well within the device limits.  (This is actually lower than intended, 
 since when the resistor values were originally calculated we failed to take into account the AC 
 coupling halving the displacement from zero.  It is still possible to drive the speaker to clipping 
 at this range however, so it is of little consequence.)
@@ -175,8 +172,14 @@ re-arrangement, the following equation can be obtained:
 
 \[R_{target} \times D = \frac{F_{target} \times R_{source}}{F_{source}}\]
 
-See \ref{sec:design:lookup-tables} for how this conversion is implemented to generate the MIDI note 
-lookup tables.
+See Section \ref{sec:design:lookup-tables} for how this conversion is implemented to generate the 
+MIDI note lookup tables.
+
+The wavetables consist of 256 8-bit samples (points on the wave), and are aligned to 256-byte 
+boundaries.  This allows for an efficient playback routine --- the top 8 bits of the sample address 
+locate the wavetable, and the low 8 bits are the position within it.  This means that the low byte 
+can be incremented and allowed to overflow, ``automatically'' achieving the wrap-around effect --- 
+the position being read flows off the end of the wavetable back onto the beginning.
 
 
 \section{Note Lookup Tables}
@@ -197,9 +200,9 @@ this was chosen.
 
 The Python script\footnote{"tools/pitchtable.py" in the submitted source code} I wrote to generate 
 the lookup tables\footnote{"note\_lookup.s"} is based on the concept outlined in Section 
-\ref{wavetables} for creating new frequencies from a single sample by modifying the sample rate and 
-divisor.  PRT and divisor values are calculated for the frequency information in the pitch 
-table\footnote{"tools/pitchtable.csv" - octave, MIDI note number, note name, frequency}.
+\ref{sec:design:wavetables} for creating new frequencies from a single sample by modifying the 
+sample rate and divisor.  PRT and divisor values are calculated for the frequency information in the 
+pitch table\footnote{"tools/pitchtable.csv" - octave, MIDI note number, note name, frequency}.
 
 The first step is calculating the PRT value for every divisor, $D$ from 1 to 255, first by 
 calculating the sample rate using
@@ -245,3 +248,14 @@ Usage & PRT low & PRT high & Divisor & 00h \\
 
 The script also produces a second table which contains a 4-character representation of the note 
 created from the octave number and note name.
+
+\section{Wavetable Playback}
+\label{sec:design:playback}
+
+Since the wavetables had been designed in an efficient way, the only remaining choice that had to be 
+made regarding the wavetable playback was how to trigger it.  Both common options involve using a 
+PRT, one involving polling the counter value, and the other using interrupts.  Polling can be useful 
+in that it will not stop the network handler from running, and therefore very little network data 
+should be lost.  However, it generally results in the note sounding wrong, as the timing gets 
+changed by some triggers being missed.  Instead I decided to use interrupts and just minimise the 
+interrupt handler so the point of control does not stay in it very long.

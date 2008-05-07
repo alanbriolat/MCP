@@ -17,7 +17,7 @@ in turn affects the operation of the continuously running wavetable playback.
 \label{sec:overview:network}
 
 The network interface is a serial connection which receives a data stream at a rate of one 34-byte 
-packet every $34ms$.  The data format is sixteen pairs of bytes, each pair containing a MIDI note 
+packet every 34ms.  The data format is sixteen pairs of bytes, each pair containing a MIDI note 
 value and a volume level (both in the range 0--127), with each pair representing a channel between 0 
 and 15 (in order).  The packet is terminated with a null byte (00h) and a carriage return (0Dh).  
 The mapping of channel identifiers to instruments is shown in Table \ref{tab:channelids}.  For the 
@@ -74,19 +74,19 @@ found in Section~\ref{sec:design:lookup-tables}.
 \section{Wavetable Playback}
 \label{sec:overview:playback}
 
-Wavetable playback is interrupt-based, using one of the inbuilt PRT channels.  Every time the PRT 
-interrupts, the playback routine is run, incrementing the position in the wavetable by the divisor 
-value and sending the sample value at the new location to the waveform output.  How the PRT reload 
-value and divisor are combined to achieve the correct note is described in 
-Section~\ref{sec:design:wavetables}.
+Wavetable playback is interrupt-based, using one of the inbuilt PRT channels (see 
+Section~\ref{sec:design:playback} for rationale).  Every time the PRT interrupts, the playback 
+routine is run, incrementing the position in the wavetable by the divisor value and sending the 
+sample value at the new location to the waveform output.  How the PRT reload value and divisor are 
+combined to achieve the correct note is described in Section~\ref{sec:design:wavetables}.
 
 \section{Keypad Handler}
 \label{sec:overview:keypad}
 
-Since the keypad has 16 possible values, when a button is pressed on the keypad, the value is used 
-to set the channel and instrument selection to that value.  The keypad handler is designed so that 
-there is only ever one action per key press, rather than repeating the action if the button is held 
-(explained in Section~\ref{sec:design:keypad}).
+Since the keypad has 16 possible values and there are 16 channels, when a button is pressed on the 
+keypad, the value is used to set the channel and instrument selection to that value.  The keypad 
+handler is designed so that there is only ever one action per key press, rather than repeating the 
+action if the button is held (explained in Section~\ref{sec:design:keypad}).
 
 \section{Terminal Interface}
 \label{sec:overview:terminal}
@@ -173,6 +173,6 @@ keeping the information up to date.  An example output can be seen in Figure~\re
 
 \begin{figure}[htb]
 \centering
-\includegraphics[width=0.7\textwidth]{images/lcd}
+\includegraphics[width=0.65\textwidth]{images/lcd}
 \caption{LCD Text Display Output}\label{fig:lcd}
 \end{figure}

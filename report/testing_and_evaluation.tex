@@ -33,4 +33,63 @@ response to changing inputs.  The observed waveform on the oscilloscope revealed
 output when the value changed.  Fixing this issue is described in 
 Section~\ref{sec:design:hardware:feedback}.  Other than this, the device performed as expected.
 
-\todo{Not done yet: testing the audio amp}
+The oscilloscope probe was then moved to the output of the audio amplifier.  Since a binary counter 
+provides a sawtooth wave, the previous test was already providing the maximum jump between values.  
+We found that if we turned the potentiometer to its maximum value, the top of the wave would be 
+clipped, however through most of the range the waveform was correct.
+
+
+\section{Output Interface}
+
+Testing the software interface to the output device was as simple as writing a simple loop program 
+to cycle through a mock waveform, at three different volumes.  I did this for a simple 8-point 
+``sine'' wave, which displayed as expected (not anything like a sine wave because of the short 
+transition time) --- this also gave me an idea of the maximum rate at which the output device could 
+be driven, since there was no delay inserted in the loop.
+
+\section{PRT-Based Playback}
+
+A program was created which used a PRT interrupt to drive the playback.  The interrupt handler 
+alternated between 00h and FFh, giving a square wave.  The tests mainly involved obtaining specific 
+frequencies by setting the PRT reload register value.
+
+\section{Wavetable Playback}
+
+When I implemented PRT-based wavetable playback, the startup routine of the software involved 
+setting the device playing a particular note.  A single 256-sample 2-wave sine wavetable was created 
+for testing the software (instrument samples were left till later in the project once everything 
+else was working).  The oscilloscope probe was attached to the amplifier output so I could see the 
+output waveform and check that it matched what should be output.  Figure~\ref{fig:oscilloscope} 
+shows the oscilloscope when playing one of the final instrument samples.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.7\textwidth]{images/oscilloscope}
+\caption{Oscilloscope Trace of Amplifier Output}\label{fig:oscilloscope}
+\end{figure}
+
+\section{Terminal Interface}
+
+Testing the terminal interface was a simple matter of echoing back everything sent to the device.  
+After this, sending stuff to the terminal could be used as a diagnostic for other parts of the 
+software.
+
+\section{Network Interface}
+
+In the first instance, testing the network interface was set up correctly was a matter of echoing 
+everything received to the terminal --- this at least verified that something was arriving.
+
+Testing that the correct data was being received was more subjective.  This involved listening to 
+the audio output to make sure it sounded right.  The most common error I had which could be heard 
+was using the volume data as the note --- this has a very distinctive sound because of the volume 
+decay in the network data.
+
+\section{LCD Text Display}
+
+Testing the LCD text display functions I wrote just involved writing some characters to different 
+positions on the screen.
+
+\section{Keypad Interface}
+
+Testing the keypad interface was done by making the keypad handler output the value of the key 
+pressed to the terminal.

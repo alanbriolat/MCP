@@ -1,28 +1,97 @@
 % vim: fo=aw2tq tw=100 spell
 \chapter{Technical Specification}
 
+\section{Operating Parameters}
+
+\begin{itemize}
+\item Power supply: $+12V$, $-12V$, $+5V$, Ground
+\item Temperature: 0--70$^{\circ}$C\footnote{Minimum range suitable for all components.}
+\end{itemize}
+
 \section{Functionality}
 \label{sec:spec:functionality}
+
+\subsection{Audio Playback}
+
+\begin{itemize}
+\item Playable MIDI notes
+    \begin{itemize}
+    \item Maximum range: 0--127
+    \item Optimal range: 0--106
+    \item Accuracy (worst): $\pm1.13\%$
+    \item Accuracy (avg.): $\pm0.5\%$
+    \end{itemize}
+\item Volume range
+    \begin{itemize}
+    \item 128 steps
+    \item Linear scale
+    \item Additional hardware volume control
+    \end{itemize}
+\item Supported instruments
+    \begin{itemize}
+    \item Bass guitar
+    \item Cello
+    \item Church Organ
+    \item Piano
+    \item Saxophone
+    \item Melody
+    \item Violin
+    \item Trombone
+    \item Trumpet
+    \item French Horn
+    \item Synth
+    \item Electric Guitar
+    \item Acoustic Guitar
+    \item Flute
+    \item Piccolo
+    \end{itemize}
+\end{itemize}
+
+\subsection{Interface}
+\begin{itemize}
+\item Network stream
+    \begin{itemize}
+    \item 19,200bps baud rate
+    \item 34-byte packet length
+        \begin{itemize}
+        \item 2 bytes per channel, in order --- pitch, volume
+        \item Terminated by null and carriage return (00h, 0Dh)
+        \end{itemize}
+    \end{itemize}
+\item 16-button keypad --- allows changing of channel at any time.
+\item Terminal interface
+    \begin{itemize}
+    \item Change channel and instrument independently.
+    \item Piano mode for manually playing notes with a keyboard --- layout based on an actual piano.
+    \item Not necessary for operation --- system can be used standalone.
+    \end{itemize}
+\end{itemize}
+
 
 \section{Cost}
 \label{sec:spec:cost}
 
+\begin{nowordcount}
 \begin{center}
 \begin{tabular}{c | c | r | r}
 Part & Quantity & Per-unit & Total \\
 \hline\hline
+64180 SBC               & 1     & \pounds100.00 & \pounds100.00 \\
 DAC0832LCN              & 2     & \pounds1.66 & \pounds3.32 \\
 LM356N                  & 2     & \pounds0.40 & \pounds0.80 \\
 LF386N-1                & 1     & \pounds0.26 & \pounds0.26 \\
 $8\Omega$ speaker       & 1     & \pounds2.62 & \pounds2.62 \\
-$10K\Omega$ potentiometer & 1     & \pounds0.72 & \pounds9.72 \\
+$10K\Omega$ potentiometer & 1     & \pounds0.72 & \pounds0.72 \\
 Metal film resistor ($\pm1\%$)    & 3     & \pounds0.06 & \pounds0.18 \\
 Electrolytic capacitor  & 5     & \pounds0.08 & \pounds0.40 \\
 Ceramic capacitor       & 5     & \pounds0.07 & \pounds0.35 \\
 PCB manufacture (40mm $\times$ 40mm) & 1     & \pounds2.90 & \pounds2.90 \\
+\hline
+\multicolumn{3}{r |}{\textbf{Total}} & \textbf{\pounds111.15} \\
 \end{tabular}
 \end{center}
+\end{nowordcount}
 
-Component prices quoted from Farnell UK.  PCB manufacture quoted from PCBTrain quote 
-calculator\footnote{\url{http://www.pcbtrain.co.uk/onestepquote.php}}.  Prices correct as of 
+Component prices (except for SBC) quoted from Farnell UK.  PCB manufacture quoted from PCBTrain 
+quote calculator\footnote{\url{http://www.pcbtrain.co.uk/onestepquote.php}}.  Prices correct as of 
 07/04/2008.  Based on a batch of 100 units.

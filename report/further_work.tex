@@ -1,7 +1,7 @@
 % vim: fo=aw2tq tw=100 spell
 \chapter{Further Work}
 
-\section{Note lookup tables}
+\section{Note Lookup Tables}
 Since the major use of the note lookup tables is by the network handler, which uses all values of 
 both tables, given a little more time it would make sense to combine the playback and display 
 information into a single lookup table.  The new lookup table would contain blocks of 8 bytes, 
@@ -85,4 +85,21 @@ playback frequency --- the output of this is the clock for the 8-bit address cou
 I built and experimented with the PRT section of this idea, and could successfully generate 
 frequencies between 46.875Hz and 3.072MHz when using a system clock of 6.144MHz, by setting the 
 reload value manually using two 8-bit DIP switches.
-% TODO: continue this section
+
+\section{Sound Reproduction}
+
+There are two enhancements I would like to make to the system if I had the time:
+
+\begin{itemize}
+\item Implement percussion instruments.
+\item Implement the ``attack'' portion of note playback.
+\end{itemize}
+
+Unfortunately, these would probably involve substantial restructuring of my playback.
+
+\section{Notes}
+
+\begin{itemize}
+\item The wavetable for the ``piano'' instrument is missing from the submitted source code --- this 
+was present during demonstration, but appears to have been accidentally lost during code cleanup.
+\end{itemize}
