@@ -119,13 +119,13 @@ of the packet is for some reason missed several packets in a row, then no matter
 is it's possible for data to flow beyond this without some form of byte counter.
 
 Since making the first method safe requires a byte counter, as does discarding incomplete packets, 
-and the extra information in the packet isn't needed, I decided to use the second method.
+and the extra information in the packet isn't needed, I decided to use the second method.  The 
+second method requires a byte counter also, but the buffering is limited to two variables containing 
+the current values, which reduces the processing needed when the end of the packet is detected --- 
+the values do not need to be extracted from the buffer.
 
-Since a byte counter is necessary to make the buffered approach safe, and also to detect if a packet 
-is valid (
 
-
-\section{Keypad handler}
+\section{Keypad Handler}
 \label{sec:design:keypad}
 
 The keypad is an awkward device for trying to get a single value from --- it interrupts continuously 
@@ -148,7 +148,38 @@ too long it can result in the system seeming unresponsive, and if too short then
 can occur.  I felt it was better to maintain a direct response between action and reaction.
 
 
-\section{Note lookup tables}
+\section{Wavetables}
+\label{sec:design:wavetables}
+
+In my design, all frequencies of the instruments are synthesised from the same wavetable sample, 
+therefore a way is needed to perform this frequency conversion.  A sample has two important 
+interdependent properties --- the sample rate and the frequency.  When changing either of these 
+properties, the following property holds:
+
+\[\frac{F_{target}}{F_{source}} = \frac{R_{target}}{R_{source}}\]
+
+In other words, if a particular note is recorded at a particular sample rate, then the difference of 
+the frequency when played is proportional to the sample rate it is played at.  In this case, we are 
+aiming to play a particular frequency, so the required sample rate can be calculated with:
+
+\[R_{target} = \frac{F_{target} \times R_{source}}{F_{source}}\]
+
+Unfortunately, at higher playback frequencies the necessary sample rate will be impractically high, 
+so an additional way of changing the frequency is needed.  If for example only every other sample 
+from the wavetable is played, without changing the sample rate, this will double the frequency of 
+the note being played, since the entire sample is being played twice as fast.  More generally, if a 
+divisor $D$ is introduced, then $F_{target} = F_{source} \times D$.
+
+To combine the two methods, $F_{target}$ can be replaced with $F_{target} \times D$.  With a little 
+re-arrangement, the following equation can be obtained:
+
+\[R_{target} \times D = \frac{F_{target} \times R_{source}}{F_{source}}\]
+
+See \ref{sec:design:lookup-tables} for how this conversion is implemented to generate the MIDI note 
+lookup tables.
+
+
+\section{Note Lookup Tables}
 \label{sec:design:lookup-tables}
 
 Lookup tables are needed to contain the PRT value, divisor and note name (including octave) for 
@@ -175,8 +206,8 @@ calculating the sample rate using
 
 \[R_{target} = \frac{F_{target} \times R_{source}}{F_{source} \times D}\]
 
-(rearranged from a similar equation in \ref{wavetables}) and then converting this to a PRT value 
-using
+(rearranged from a similar equation in \ref{sec:design:wavetables}) and then converting this to a 
+PRT value using
 
 \[PRT = round\left(\frac{F_{CPU}}{D_{PRT}\times{}R_{target}}\right)\]
 
@@ -196,10 +227,10 @@ sample rate is higher than 8kHz (a sensible limit given the CPU speed), and sort
 by $R^{1-E}$.  The idea is that the basic ordering aims for a high sample rate, but any kind of 
 significant error greatly diminishes the value of the result.  The first result is taken from the 
 sorted list, giving the PRT and divisor values the algorithm decides best represent the frequency.  
-While almost seeming like \todo{mathematical voodoo}, the worst error rate for any note in the 
-resulting table is $1.13\%$, with an average sample rate of just under 7kHz.  Other sorting methods 
-I tried had varied results, generally creating high sample rates with high error margins, or low 
-error margins with bad sample rates.
+While almost seeming like mathematical voodoo, the worst error rate for any note in the resulting 
+table is $1.13\%$, with an average sample rate of just under 7kHz.  Other sorting methods I tried 
+had varied results, generally creating high sample rates with high error margins, or low error 
+margins with bad sample rates.
 
 The format of the resulting lookup table is:
 \begin{nowordcount}
@@ -214,34 +245,3 @@ Usage & PRT low & PRT high & Divisor & 00h \\
 
 The script also produces a second table which contains a 4-character representation of the note 
 created from the octave number and note name.
-
-
-\section{Wave tables}
-\label{wavetables}
-
-In my design, all frequencies of the instruments are synthesised from the same wavetable sample, 
-therefore a way is needed to perform this frequency conversion.  A sample has two important 
-interdependent properties --- the sample rate and the frequency.  When changing either of these 
-properties, the following property holds:
-
-\[\frac{F_{target}}{F_{source}} = \frac{R_{target}}{R_{source}}\]
-
-In other words, if a particular note is recorded at a particular sample rate, then the difference of 
-the frequency when played is proportional to the sample rate it is played at.  In this case, we are 
-aiming to play a particular frequency, so the required sample rate can be calculated with:
-
-\[R_{target} = \frac{F_{target} \times R_{source}}{F_{source}}\]
-
-Unfortunately, at higher playback frequencies the necessary sample rate will be impractically high, 
-so an additional way of changing the frequency is needed.  If for example only every other sample 
-from the wavetable is played, without changing the sample rate, this will double the frequency of 
-the note being played, since the entire sample is being played twice as fast.  More generally, if a 
-divisor $D$ is introduced, then $F_{target} = F_{source} \times D$.
-
-To combine the two methods, $F_{target}$ can be replaced with $F_{target} \times D$.  With a little 
-re-arrangement, the following equation can be obtained:
-
-\[R_{target} \times D = \frac{F_{target} \times R_{source}}{F_{source}}\]
-
-See \ref{notelookuptables} for how this conversion is implemented to generate the MIDI note lookup 
-tables.
